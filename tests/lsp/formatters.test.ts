@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { filterDiagnosticsBySeverity, formatPrepareRenameResult } from "../src/lsp/lsp-formatters"
-import type { Diagnostic, Range } from "../src/lsp/types"
+import { filterDiagnosticsBySeverity, formatPrepareRenameResult } from "../../src/lsp/lsp-formatters"
+import type { Diagnostic, Range } from "../../src/lsp/types"
 
 const range: Range = {
   start: { line: 2, character: 4 },

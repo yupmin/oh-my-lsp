@@ -12,17 +12,17 @@ const {
   mockIsServerInstalled: vi.fn(),
 }))
 
-vi.mock("../src/lsp/server-config-loader", () => ({
+vi.mock("../../src/lsp/server-config-loader", () => ({
   getMergedServers: mockGetMergedServers,
   loadAllConfigs: mockLoadAllConfigs,
   getConfigPaths: mockGetConfigPaths,
 }))
 
-vi.mock("../src/lsp/server-installation", () => ({
+vi.mock("../../src/lsp/server-installation", () => ({
   isServerInstalled: mockIsServerInstalled,
 }))
 
-import { findServerForExtension, getAllServers, getConfigPaths_ } from "../src/lsp/server-resolution"
+import { findServerForExtension, getAllServers, getConfigPaths_ } from "../../src/lsp/server-resolution"
 
 beforeEach(() => {
   vi.clearAllMocks()

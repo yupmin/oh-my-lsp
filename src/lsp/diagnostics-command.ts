@@ -8,13 +8,18 @@ export type DiagnosticSeverityFilter = "error" | "warning" | "information" | "hi
 export interface DiagnosticsArgs {
   filePath: string
   severity?: DiagnosticSeverityFilter
+  basePath?: string
 }
 
 export async function diagnostics(args: DiagnosticsArgs): Promise<string> {
   try {
-    const result = await withLspClient(args.filePath, async (client) => {
-      return (await client.diagnostics(args.filePath)) as { items?: Diagnostic[] } | Diagnostic[] | null
-    })
+    const result = await withLspClient(
+      args.filePath,
+      async (client) => {
+        return (await client.diagnostics(args.filePath)) as { items?: Diagnostic[] } | Diagnostic[] | null
+      },
+      { basePath: args.basePath }
+    )
 
     let diagnosticsList: Diagnostic[] = []
     if (result) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { getLanguageId } from "../src/lsp/language-config"
+import { getLanguageId } from "../../src/lsp/language-config"
 
 describe("getLanguageId", () => {
   it("returns mapped language id for known extension", () => {

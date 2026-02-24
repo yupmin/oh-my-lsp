@@ -8,15 +8,23 @@ export interface FindReferencesArgs {
   line: number
   character: number
   includeDeclaration?: boolean
+  basePath?: string
 }
 
 export async function findReferences(args: FindReferencesArgs): Promise<string> {
   try {
-    const result = await withLspClient(args.filePath, async (client) => {
-      return (await client.references(args.filePath, args.line, args.character, args.includeDeclaration ?? true)) as
-        | Location[]
-        | null
-    })
+    const result = await withLspClient(
+      args.filePath,
+      async (client) => {
+        return (await client.references(
+          args.filePath,
+          args.line,
+          args.character,
+          args.includeDeclaration ?? true
+        )) as Location[] | null
+      },
+      { basePath: args.basePath }
+    )
 
     if (!result || result.length === 0) {
       const output = "No references found"

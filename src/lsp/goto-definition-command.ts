@@ -6,17 +6,22 @@ export interface GotoDefinitionArgs {
   filePath: string
   line: number
   character: number
+  basePath?: string
 }
 
 export async function gotoDefinition(args: GotoDefinitionArgs): Promise<string> {
   try {
-    const result = await withLspClient(args.filePath, async (client) => {
-      return (await client.definition(args.filePath, args.line, args.character)) as
-        | Location
-        | Location[]
-        | LocationLink[]
-        | null
-    })
+    const result = await withLspClient(
+      args.filePath,
+      async (client) => {
+        return (await client.definition(args.filePath, args.line, args.character)) as
+          | Location
+          | Location[]
+          | LocationLink[]
+          | null
+      },
+      { basePath: args.basePath }
+    )
 
     if (!result) {
       const output = "No definition found"

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { cleanupTempDirectoryLspClients } from "../src/lsp/lsp-manager-temp-directory-cleanup"
+import { cleanupTempDirectoryLspClients } from "../../src/lsp/lsp-manager-temp-directory-cleanup"
 
 describe("cleanupTempDirectoryLspClients", () => {
   it("removes only idle clients in temp directories", async () => {

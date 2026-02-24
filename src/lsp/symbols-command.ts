@@ -8,6 +8,7 @@ export interface SymbolsArgs {
   scope?: "document" | "workspace"
   query?: string
   limit?: number
+  basePath?: string
 }
 
 export async function symbols(args: SymbolsArgs): Promise<string> {
@@ -19,9 +20,13 @@ export async function symbols(args: SymbolsArgs): Promise<string> {
         return "Error: 'query' is required for workspace scope"
       }
 
-      const result = await withLspClient(args.filePath, async (client) => {
-        return (await client.workspaceSymbols(args.query!)) as SymbolInfo[] | null
-      })
+      const result = await withLspClient(
+        args.filePath,
+        async (client) => {
+          return (await client.workspaceSymbols(args.query!)) as SymbolInfo[] | null
+        },
+        { basePath: args.basePath }
+      )
 
       if (!result || result.length === 0) {
         return "No symbols found"
@@ -38,9 +43,13 @@ export async function symbols(args: SymbolsArgs): Promise<string> {
       return lines.join("\n")
     }
 
-    const result = await withLspClient(args.filePath, async (client) => {
-      return (await client.documentSymbols(args.filePath)) as DocumentSymbol[] | SymbolInfo[] | null
-    })
+    const result = await withLspClient(
+      args.filePath,
+      async (client) => {
+        return (await client.documentSymbols(args.filePath)) as DocumentSymbol[] | SymbolInfo[] | null
+      },
+      { basePath: args.basePath }
+    )
 
     if (!result || result.length === 0) {
       return "No symbols found"

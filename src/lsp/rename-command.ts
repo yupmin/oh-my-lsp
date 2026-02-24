@@ -7,6 +7,7 @@ export interface PrepareRenameArgs {
   filePath: string
   line: number
   character: number
+  basePath?: string
 }
 
 export interface RenameArgs {
@@ -14,16 +15,21 @@ export interface RenameArgs {
   line: number
   character: number
   newName: string
+  basePath?: string
 }
 
 export async function prepareRename(args: PrepareRenameArgs): Promise<string> {
   try {
-    const result = await withLspClient(args.filePath, async (client) => {
-      return (await client.prepareRename(args.filePath, args.line, args.character)) as
-        | PrepareRenameResult
-        | PrepareRenameDefaultBehavior
-        | null
-    })
+    const result = await withLspClient(
+      args.filePath,
+      async (client) => {
+        return (await client.prepareRename(args.filePath, args.line, args.character)) as
+          | PrepareRenameResult
+          | PrepareRenameDefaultBehavior
+          | null
+      },
+      { basePath: args.basePath }
+    )
     const output = formatPrepareRenameResult(result)
     return output
   } catch (e) {
@@ -34,9 +40,18 @@ export async function prepareRename(args: PrepareRenameArgs): Promise<string> {
 
 export async function rename(args: RenameArgs): Promise<string> {
   try {
-    const edit = await withLspClient(args.filePath, async (client) => {
-      return (await client.rename(args.filePath, args.line, args.character, args.newName)) as WorkspaceEdit | null
-    })
+    const edit = await withLspClient(
+      args.filePath,
+      async (client) => {
+        return (await client.rename(
+          args.filePath,
+          args.line,
+          args.character,
+          args.newName
+        )) as WorkspaceEdit | null
+      },
+      { basePath: args.basePath }
+    )
     const result = applyWorkspaceEdit(edit)
     const output = formatApplyResult(result)
     return output

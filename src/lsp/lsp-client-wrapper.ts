@@ -6,6 +6,10 @@ import { LSPClient, lspManager } from "./client"
 import { findServerForExtension } from "./config"
 import type { ServerLookupResult } from "./types"
 
+export interface WithLspClientOptions {
+  basePath?: string
+}
+
 export function findWorkspaceRoot(filePath: string): string {
   let dir = resolve(filePath)
 
@@ -27,6 +31,33 @@ export function findWorkspaceRoot(filePath: string): string {
   }
 
   return require("path").dirname(resolve(filePath))
+}
+
+export function resolveLspRoot(filePath: string, basePath?: string): string {
+  if (!basePath) {
+    return findWorkspaceRoot(filePath)
+  }
+
+  const resolvedBasePath = resolve(basePath)
+
+  if (!existsSync(resolvedBasePath)) {
+    throw new Error(`Base path does not exist: ${resolvedBasePath}`)
+  }
+
+  try {
+    if (!require("fs").statSync(resolvedBasePath).isDirectory()) {
+      throw new Error(`Base path is not a directory: ${resolvedBasePath}`)
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("Base path is not a directory:")) {
+      throw error
+    }
+    throw new Error(
+      `Cannot access base path: ${resolvedBasePath} (${error instanceof Error ? error.message : String(error)})`
+    )
+  }
+
+  return resolvedBasePath
 }
 
 export function uriToPath(uri: string): string {
@@ -68,7 +99,11 @@ export function formatServerLookupError(result: Exclude<ServerLookupResult, { st
   ].join("\n")
 }
 
-export async function withLspClient<T>(filePath: string, fn: (client: LSPClient) => Promise<T>): Promise<T> {
+export async function withLspClient<T>(
+  filePath: string,
+  fn: (client: LSPClient) => Promise<T>,
+  options: WithLspClientOptions = {}
+): Promise<T> {
   const absPath = resolve(filePath)
   const ext = extname(absPath)
   const result = findServerForExtension(ext)
@@ -78,7 +113,7 @@ export async function withLspClient<T>(filePath: string, fn: (client: LSPClient)
   }
 
   const server = result.server
-  const root = findWorkspaceRoot(absPath)
+  const root = resolveLspRoot(absPath, options.basePath)
   const client = await lspManager.getClient(root, server)
 
   try {

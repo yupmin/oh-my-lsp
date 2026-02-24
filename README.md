@@ -46,7 +46,7 @@ oh-my-lsp <command> <file-path> ...
 ### `goto_definition`
 
 ```bash
-oh-my-lsp goto_definition <file-path> [--line=0] [--character=0] [--timeout=60000] [--verbose]
+oh-my-lsp goto_definition <file-path> [--line=0] [--character=0] [--timeout=60000] [--base-path <path>] [--verbose]
 ```
 
 - `line`: 0-based
@@ -55,7 +55,7 @@ oh-my-lsp goto_definition <file-path> [--line=0] [--character=0] [--timeout=6000
 ### `find_references`
 
 ```bash
-oh-my-lsp find_references <file-path> [--line=0] [--character=0] [--timeout=60000] [--verbose] [--no-include-declaration]
+oh-my-lsp find_references <file-path> [--line=0] [--character=0] [--timeout=60000] [--base-path <path>] [--verbose] [--no-include-declaration]
 ```
 
 - 기본값은 declaration 포함(`includeDeclaration=true`)
@@ -64,7 +64,7 @@ oh-my-lsp find_references <file-path> [--line=0] [--character=0] [--timeout=6000
 ### `symbols`
 
 ```bash
-oh-my-lsp symbols <file-path> [--scope document|workspace] [--query <query>] [--limit <n>] [--timeout=60000] [--verbose]
+oh-my-lsp symbols <file-path> [--scope document|workspace] [--query <query>] [--limit <n>] [--timeout=60000] [--base-path <path>] [--verbose]
 ```
 
 - `--scope workspace`일 때는 `--query` 필수
@@ -72,17 +72,19 @@ oh-my-lsp symbols <file-path> [--scope document|workspace] [--query <query>] [--
 ### `diagnostics`
 
 ```bash
-oh-my-lsp diagnostics <file-path> [--severity error|warning|information|hint|all] [--timeout=60000] [--verbose]
+oh-my-lsp diagnostics <file-path> [--severity error|warning|information|hint|all] [--timeout=60000] [--base-path <path>] [--verbose]
 ```
 
 ### `prepare_rename`
 
 ```bash
-oh-my-lsp prepare_rename <file-path> [--line=0] [--character=0] [--timeout=60000] [--verbose]
+oh-my-lsp prepare_rename <file-path> [--line=0] [--character=0] [--timeout=60000] [--base-path <path>] [--verbose]
 ```
 
 ### `rename`
 
 ```bash
-oh-my-lsp rename <file-path> <new-name> [--line=0] [--character=0] [--timeout=60000] [--verbose]
+oh-my-lsp rename <file-path> <new-name> [--line=0] [--character=0] [--timeout=60000] [--base-path <path>] [--verbose]
 ```
+
+- `--base-path`를 지정하면 workspace root 자동 탐색 대신 해당 경로를 LSP 서버 실행 기준 경로(cwd/root)로 사용합니다.

@@ -4,8 +4,8 @@ import { join } from "node:path"
 import { pathToFileURL } from "node:url"
 import { afterEach, describe, expect, it } from "vitest"
 
-import { applyWorkspaceEdit } from "../src/lsp/workspace-edit"
-import type { WorkspaceEdit } from "../src/lsp/types"
+import { applyWorkspaceEdit } from "../../src/lsp/workspace-edit"
+import type { WorkspaceEdit } from "../../src/lsp/types"
 
 const tempDirs: string[] = []
 

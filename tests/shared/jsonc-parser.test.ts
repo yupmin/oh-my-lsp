@@ -3,7 +3,7 @@ import { join } from "node:path"
 import { tmpdir } from "node:os"
 import { afterEach, describe, expect, it } from "vitest"
 
-import { detectConfigFile, parseJsonc } from "../src/shared/jsonc-parser"
+import { detectConfigFile, parseJsonc } from "../../src/shared/jsonc-parser"
 
 const tempDirs: string[] = []
 

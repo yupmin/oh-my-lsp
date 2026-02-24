@@ -14,6 +14,7 @@ import {
 type RuntimeOptions = {
   timeout: number
   verbose: boolean
+  basePath?: string
 }
 
 type PositionOptions = RuntimeOptions & {
@@ -51,6 +52,14 @@ function parseTimeout(value: string): number {
     throw new Error("timeout must be an integer >= 1")
   }
   return parsed
+}
+
+function parseBasePath(value: string): string {
+  const trimmed = value.trim()
+  if (!trimmed) {
+    throw new Error("base-path must not be empty")
+  }
+  return trimmed
 }
 
 function parseScope(value: string): "document" | "workspace" {
@@ -113,15 +122,18 @@ program
   .option("--line <line>", "0-based line", parseLine, 0)
   .option("--character <character>", "0-based character", parseCharacter, 0)
   .option("--timeout <ms>", "LSP request timeout in milliseconds", parseTimeout, 60000)
+  .option("--base-path <base-path>", "Base path used as LSP workspace root", parseBasePath)
   .option("--verbose", "Enable verbose runtime logging")
   .action(async (filePath: string, options: PositionOptions) => {
     applyRuntimeOptions(options)
-    await runAndPrint(() =>
-      gotoDefinition({
-        filePath,
-        line: toOneBasedLine(options.line),
-        character: options.character,
-      })
+    await runAndPrint(
+      () =>
+        gotoDefinition({
+          filePath,
+          line: toOneBasedLine(options.line),
+          character: options.character,
+          basePath: options.basePath,
+        })
     )
   })
 
@@ -132,6 +144,7 @@ program
   .option("--line <line>", "0-based line", parseLine, 0)
   .option("--character <character>", "0-based character", parseCharacter, 0)
   .option("--timeout <ms>", "LSP request timeout in milliseconds", parseTimeout, 60000)
+  .option("--base-path <base-path>", "Base path used as LSP workspace root", parseBasePath)
   .option("--verbose", "Enable verbose runtime logging")
   .option("--no-include-declaration", "Exclude the declaration itself")
   .action(
@@ -140,13 +153,15 @@ program
       options: PositionOptions & { includeDeclaration: boolean }
     ) => {
       applyRuntimeOptions(options)
-      await runAndPrint(() =>
-        findReferences({
-          filePath,
-          line: toOneBasedLine(options.line),
-          character: options.character,
-          includeDeclaration: options.includeDeclaration,
-        })
+      await runAndPrint(
+        () =>
+          findReferences({
+            filePath,
+            line: toOneBasedLine(options.line),
+            character: options.character,
+            includeDeclaration: options.includeDeclaration,
+            basePath: options.basePath,
+          })
       )
     }
   )
@@ -159,6 +174,7 @@ program
   .option("--query <query>", "Symbol name to search (required for workspace scope)")
   .option("--limit <limit>", "Max results (default 200)", parseLimit)
   .option("--timeout <ms>", "LSP request timeout in milliseconds", parseTimeout, 60000)
+  .option("--base-path <base-path>", "Base path used as LSP workspace root", parseBasePath)
   .option("--verbose", "Enable verbose runtime logging")
   .action(
     async (
@@ -166,13 +182,15 @@ program
       options: RuntimeOptions & { scope: "document" | "workspace"; query?: string; limit?: number }
     ) => {
       applyRuntimeOptions(options)
-      await runAndPrint(() =>
-        symbols({
-          filePath,
-          scope: options.scope,
-          query: options.query,
-          limit: options.limit,
-        })
+      await runAndPrint(
+        () =>
+          symbols({
+            filePath,
+            scope: options.scope,
+            query: options.query,
+            limit: options.limit,
+            basePath: options.basePath,
+          })
       )
     }
   )
@@ -183,6 +201,7 @@ program
   .argument("<file-path>", "Target file path")
   .option("--severity <severity>", "error|warning|information|hint|all", parseSeverity)
   .option("--timeout <ms>", "LSP request timeout in milliseconds", parseTimeout, 60000)
+  .option("--base-path <base-path>", "Base path used as LSP workspace root", parseBasePath)
   .option("--verbose", "Enable verbose runtime logging")
   .action(
     async (
@@ -190,11 +209,13 @@ program
       options: RuntimeOptions & { severity?: DiagnosticSeverityFilter }
     ) => {
       applyRuntimeOptions(options)
-      await runAndPrint(() =>
-        diagnostics({
-          filePath,
-          severity: options.severity,
-        })
+      await runAndPrint(
+        () =>
+          diagnostics({
+            filePath,
+            severity: options.severity,
+            basePath: options.basePath,
+          })
       )
     }
   )
@@ -206,15 +227,18 @@ program
   .option("--line <line>", "0-based line", parseLine, 0)
   .option("--character <character>", "0-based character", parseCharacter, 0)
   .option("--timeout <ms>", "LSP request timeout in milliseconds", parseTimeout, 60000)
+  .option("--base-path <base-path>", "Base path used as LSP workspace root", parseBasePath)
   .option("--verbose", "Enable verbose runtime logging")
   .action(async (filePath: string, options: PositionOptions) => {
     applyRuntimeOptions(options)
-    await runAndPrint(() =>
-      prepareRename({
-        filePath,
-        line: toOneBasedLine(options.line),
-        character: options.character,
-      })
+    await runAndPrint(
+      () =>
+        prepareRename({
+          filePath,
+          line: toOneBasedLine(options.line),
+          character: options.character,
+          basePath: options.basePath,
+        })
     )
   })
 
@@ -226,16 +250,19 @@ program
   .option("--line <line>", "0-based line", parseLine, 0)
   .option("--character <character>", "0-based character", parseCharacter, 0)
   .option("--timeout <ms>", "LSP request timeout in milliseconds", parseTimeout, 60000)
+  .option("--base-path <base-path>", "Base path used as LSP workspace root", parseBasePath)
   .option("--verbose", "Enable verbose runtime logging")
   .action(async (filePath: string, newName: string, options: PositionOptions) => {
     applyRuntimeOptions(options)
-    await runAndPrint(() =>
-      rename({
-        filePath,
-        line: toOneBasedLine(options.line),
-        character: options.character,
-        newName,
-      })
+    await runAndPrint(
+      () =>
+        rename({
+          filePath,
+          line: toOneBasedLine(options.line),
+          character: options.character,
+          newName,
+          basePath: options.basePath,
+        })
     )
   })
 

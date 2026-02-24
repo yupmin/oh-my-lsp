@@ -4,7 +4,12 @@ import { join } from "node:path"
 import { pathToFileURL } from "node:url"
 import { afterEach, describe, expect, it } from "vitest"
 
-import { findWorkspaceRoot, formatServerLookupError, uriToPath } from "../src/lsp/lsp-client-wrapper"
+import {
+  findWorkspaceRoot,
+  formatServerLookupError,
+  resolveLspRoot,
+  uriToPath,
+} from "../../src/lsp/lsp-client-wrapper"
 
 const tempDirs: string[] = []
 
@@ -26,6 +31,39 @@ describe("findWorkspaceRoot", () => {
     writeFileSync(filePath, "export const x = 1\n", "utf-8")
 
     expect(findWorkspaceRoot(filePath)).toBe(root)
+  })
+})
+
+describe("resolveLspRoot", () => {
+  it("uses explicit base path when provided", () => {
+    const root = mkdtempSync(join(tmpdir(), "oh-my-lsp-base-"))
+    tempDirs.push(root)
+
+    const filePath = join(root, "src", "index.ts")
+    mkdirSync(join(root, "src"), { recursive: true })
+    writeFileSync(filePath, "export const x = 1\n", "utf-8")
+
+    expect(resolveLspRoot(filePath, root)).toBe(root)
+  })
+
+  it("throws when base path does not exist", () => {
+    const root = mkdtempSync(join(tmpdir(), "oh-my-lsp-base-missing-"))
+    tempDirs.push(root)
+    const filePath = join(root, "index.ts")
+    writeFileSync(filePath, "export const x = 1\n", "utf-8")
+
+    expect(() => resolveLspRoot(filePath, join(root, "missing"))).toThrow("Base path does not exist:")
+  })
+
+  it("throws when base path is not a directory", () => {
+    const root = mkdtempSync(join(tmpdir(), "oh-my-lsp-base-file-"))
+    tempDirs.push(root)
+    const filePath = join(root, "index.ts")
+    const baseFilePath = join(root, "base.txt")
+    writeFileSync(filePath, "export const x = 1\n", "utf-8")
+    writeFileSync(baseFilePath, "not dir\n", "utf-8")
+
+    expect(() => resolveLspRoot(filePath, baseFilePath)).toThrow("Base path is not a directory:")
   })
 })
 

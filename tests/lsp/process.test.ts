@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 
-import { validateCwd } from "../src/lsp/lsp-process"
+import { validateCwd } from "../../src/lsp/lsp-process"
 
 const tempDirs: string[] = []
 
