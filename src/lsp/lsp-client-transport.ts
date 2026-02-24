@@ -1,15 +1,28 @@
+import { createHash } from "node:crypto"
+import { mkdirSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import type { Diagnostic, ResolvedServer } from "./types"
 import { spawnProcess, type UnifiedProcess } from "./lsp-process"
 import { log } from "../shared/logger"
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 15000
+const JAVA_REQUEST_TIMEOUT_MS = 60000
 
-function resolveRequestTimeoutMs(): number {
+function resolveRequestTimeoutMs(serverId: string): number {
   const raw = process.env.OH_MY_LSP_TIMEOUT_MS
-  if (!raw) return DEFAULT_REQUEST_TIMEOUT_MS
+  if (!raw) {
+    if (serverId === "jdtls") {
+      return JAVA_REQUEST_TIMEOUT_MS
+    }
+    return DEFAULT_REQUEST_TIMEOUT_MS
+  }
 
   const parsed = Number(raw)
   if (!Number.isInteger(parsed) || parsed < 1) {
+    if (serverId === "jdtls") {
+      return JAVA_REQUEST_TIMEOUT_MS
+    }
     return DEFAULT_REQUEST_TIMEOUT_MS
   }
 
@@ -35,7 +48,7 @@ export class LSPClientTransport {
   protected readonly stderrBuffer: string[] = []
   protected processExited = false
   protected readonly diagnosticsStore = new Map<string, Diagnostic[]>()
-  protected readonly REQUEST_TIMEOUT = resolveRequestTimeoutMs()
+  protected readonly REQUEST_TIMEOUT: number
   protected readonly pendingRequests = new Map<
     number,
     {
@@ -48,10 +61,73 @@ export class LSPClientTransport {
   constructor(
     protected root: string,
     protected server: ResolvedServer
-  ) {}
+  ) {
+    this.REQUEST_TIMEOUT = resolveRequestTimeoutMs(server.id)
+  }
+
+  protected resolveJdtlsCommand(command: string[]): string[] {
+    if (this.server.id !== "jdtls") {
+      return command
+    }
+
+    const hasData = command.includes("-data")
+    const hasConfiguration = command.includes("-configuration")
+
+    if (hasData && hasConfiguration) {
+      return command
+    }
+
+    const workspaceHash = createHash("sha1").update(this.root).digest("hex")
+    const customBaseDir = process.env.OH_MY_LSP_JDTLS_BASE?.trim()
+    const candidateBaseDirs = customBaseDir
+      ? [customBaseDir, join(tmpdir(), "oh-my-lsp-jdtls")]
+      : [join(tmpdir(), "oh-my-lsp-jdtls")]
+
+    let dataDir = ""
+    let configurationDir = ""
+    let mkdirError: unknown
+
+    for (const candidate of candidateBaseDirs) {
+      const candidateDataDir = join(candidate, "workspaces", workspaceHash)
+      const candidateConfigurationDir = join(candidate, "configuration")
+      try {
+        mkdirSync(candidateDataDir, { recursive: true })
+        mkdirSync(candidateConfigurationDir, { recursive: true })
+        dataDir = candidateDataDir
+        configurationDir = candidateConfigurationDir
+        break
+      } catch (error) {
+        mkdirError = error
+        continue
+      }
+    }
+
+    if (!dataDir || !configurationDir) {
+      throw new Error(
+        `Failed to prepare jdtls directories: ${mkdirError instanceof Error ? mkdirError.message : String(mkdirError)}`
+      )
+    }
+
+    const resolved = [...command]
+    if (!hasConfiguration) {
+      resolved.push("-configuration", configurationDir)
+    }
+    if (!hasData) {
+      resolved.push("-data", dataDir)
+    }
+
+    log("[LSP] Using explicit jdtls paths", {
+      configurationDir,
+      dataDir,
+    })
+
+    return resolved
+  }
 
   async start(): Promise<void> {
-    this.proc = spawnProcess(this.server.command, {
+    const command = this.resolveJdtlsCommand(this.server.command)
+
+    this.proc = spawnProcess(command, {
       cwd: this.root,
       env: {
         ...process.env,
@@ -60,7 +136,7 @@ export class LSPClientTransport {
     })
 
     if (!this.proc) {
-      throw new Error(`Failed to spawn LSP server: ${this.server.command.join(" ")}`)
+      throw new Error(`Failed to spawn LSP server: ${command.join(" ")}`)
     }
 
     this.startStderrReading()
