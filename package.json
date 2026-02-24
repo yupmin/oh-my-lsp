@@ -2,7 +2,6 @@
   "name": "oh-my-lsp-cli",
   "version": "0.1.0",
   "description": "TypeScript CLI scaffold with commander.js",
-  "type": "module",
   "bin": {
     "oh-my-lsp": "./dist/index.js"
   },
