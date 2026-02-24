@@ -1,43 +1,41 @@
 # oh-my-lsp CLI
 
-`commander.js` 기반 TypeScript LSP CLI입니다.  
-`oh-my-opencode`의 `src/tools/lsp` 핵심 로직을 CLI 형태로 포팅했습니다.
+TypeScript LSP CLI built with `commander.js`.  
+It ports the core logic from `oh-my-opencode`'s `src/tools/lsp` into a CLI.
 
-## 시작하기
+## Getting Started
 
 ```bash
-npm install
+npm install oh-my-lsp
 ```
 
-## 개발 실행
+Run directly:
+
+```bash
+npx oh-my-lsp diagnostics src/index.ts
+```
+
+## Run in Development
 
 ```bash
 npm run dev -- --help
 ```
 
-## 빌드 / 실행
+## Build
 
 ```bash
 npm run build
-npm run start -- --help
 ```
 
-## 테스트
+## Test
 
 ```bash
 npm run test
 ```
 
-## 전역 링크(선택)
+## Commands
 
-```bash
-npm link
-oh-my-lsp --help
-```
-
-## 명령어
-
-기본 형태:
+Basic format:
 
 ```bash
 oh-my-lsp <command> <file-path> ...
@@ -58,8 +56,8 @@ oh-my-lsp goto_definition <file-path> [--line=0] [--character=0] [--timeout=6000
 oh-my-lsp find_references <file-path> [--line=0] [--character=0] [--timeout=60000] [--base-path <path>] [--verbose] [--no-include-declaration]
 ```
 
-- 기본값은 declaration 포함(`includeDeclaration=true`)
-- `--no-include-declaration` 사용 시 declaration 제외
+- Includes declaration by default (`includeDeclaration=true`)
+- Excludes declaration when `--no-include-declaration` is used
 
 ### `symbols`
 
@@ -67,7 +65,7 @@ oh-my-lsp find_references <file-path> [--line=0] [--character=0] [--timeout=6000
 oh-my-lsp symbols <file-path> [--scope document|workspace] [--query <query>] [--limit <n>] [--timeout=60000] [--base-path <path>] [--verbose]
 ```
 
-- `--scope workspace`일 때는 `--query` 필수
+- `--query` is required when `--scope workspace`
 
 ### `diagnostics`
 
@@ -87,4 +85,4 @@ oh-my-lsp prepare_rename <file-path> [--line=0] [--character=0] [--timeout=60000
 oh-my-lsp rename <file-path> <new-name> [--line=0] [--character=0] [--timeout=60000] [--base-path <path>] [--verbose]
 ```
 
-- `--base-path`를 지정하면 workspace root 자동 탐색 대신 해당 경로를 LSP 서버 실행 기준 경로(cwd/root)로 사용합니다.
+- If `--base-path` is set, that path is used as the LSP server workspace root (`cwd/root`) instead of auto-detecting the workspace root.
