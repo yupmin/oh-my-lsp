@@ -1,7 +1,7 @@
-import { DEFAULT_MAX_SYMBOLS } from "./constants"
-import { formatDocumentSymbol, formatSymbolInfo } from "./lsp-formatters"
-import { withLspClient } from "./lsp-client-wrapper"
-import type { DocumentSymbol, SymbolInfo } from "./types"
+import { DEFAULT_MAX_SYMBOLS } from "../lsp/constants"
+import { formatDocumentSymbol, formatSymbolInfo } from "../lsp/lsp-formatters"
+import { withLspClient } from "../lsp/lsp-client-wrapper"
+import type { DocumentSymbol, SymbolInfo } from "../lsp/types"
 
 export interface SymbolsArgs {
   filePath: string

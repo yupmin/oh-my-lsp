@@ -1,6 +1,6 @@
-import { formatLocation } from "./lsp-formatters"
-import { withLspClient } from "./lsp-client-wrapper"
-import type { Location, LocationLink } from "./types"
+import { formatLocation } from "../lsp/lsp-formatters"
+import { withLspClient } from "../lsp/lsp-client-wrapper"
+import type { Location, LocationLink } from "../lsp/types"
 
 export interface GotoDefinitionArgs {
   filePath: string

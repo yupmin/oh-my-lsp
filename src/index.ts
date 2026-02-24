@@ -2,14 +2,14 @@
 import { Command } from "commander"
 
 import { lspManager } from "./lsp/client"
-import { gotoDefinition } from "./lsp/goto-definition-command"
-import { findReferences } from "./lsp/find-references-command"
-import { symbols } from "./lsp/symbols-command"
-import { prepareRename, rename } from "./lsp/rename-command"
+import { gotoDefinition } from "./commands/goto-definition-command"
+import { findReferences } from "./commands/find-references-command"
+import { symbols } from "./commands/symbols-command"
+import { prepareRename, rename } from "./commands/rename-command"
 import {
   diagnostics,
   type DiagnosticSeverityFilter,
-} from "./lsp/diagnostics-command"
+} from "./commands/diagnostics-command"
 
 type RuntimeOptions = {
   timeout: number

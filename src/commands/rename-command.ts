@@ -1,7 +1,7 @@
-import { formatApplyResult, formatPrepareRenameResult } from "./lsp-formatters"
-import { withLspClient } from "./lsp-client-wrapper"
-import { applyWorkspaceEdit } from "./workspace-edit"
-import type { PrepareRenameDefaultBehavior, PrepareRenameResult, WorkspaceEdit } from "./types"
+import { formatApplyResult, formatPrepareRenameResult } from "../lsp/lsp-formatters"
+import { withLspClient } from "../lsp/lsp-client-wrapper"
+import { applyWorkspaceEdit } from "../lsp/workspace-edit"
+import type { PrepareRenameDefaultBehavior, PrepareRenameResult, WorkspaceEdit } from "../lsp/types"
 
 export interface PrepareRenameArgs {
   filePath: string

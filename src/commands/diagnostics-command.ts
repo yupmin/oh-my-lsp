@@ -1,7 +1,7 @@
-import { DEFAULT_MAX_DIAGNOSTICS } from "./constants"
-import { filterDiagnosticsBySeverity, formatDiagnostic } from "./lsp-formatters"
-import { withLspClient } from "./lsp-client-wrapper"
-import type { Diagnostic } from "./types"
+import { DEFAULT_MAX_DIAGNOSTICS } from "../lsp/constants"
+import { filterDiagnosticsBySeverity, formatDiagnostic } from "../lsp/lsp-formatters"
+import { withLspClient } from "../lsp/lsp-client-wrapper"
+import type { Diagnostic } from "../lsp/types"
 
 export type DiagnosticSeverityFilter = "error" | "warning" | "information" | "hint" | "all"
 
