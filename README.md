@@ -22,6 +22,12 @@ npm run build
 npm run start -- --help
 ```
 
+## 테스트
+
+```bash
+npm run test
+```
+
 ## 전역 링크(선택)
 
 ```bash
