@@ -1,7 +1,6 @@
 # oh-my-lsp CLI
 
-TypeScript LSP CLI built with `commander.js`.  
-It ports the core logic from `oh-my-opencode`'s `src/tools/lsp` into a CLI.
+Built by referencing [`oh-my-opencode`'s `src/tools/lsp`](https://github.com/code-yeongyu/oh-my-opencode/dev/src/tools/lsp).
 
 ## Getting Started
 
@@ -40,6 +39,17 @@ Basic format:
 ```bash
 oh-my-lsp <command> <file-path> ...
 ```
+
+### LSP Tools (IDE Features for Agents)
+
+| Tool | Description |
+|------|-------------|
+| **diagnostics** | Get errors/warnings before build |
+| **prepare_rename** | Validate rename operation |
+| **rename** | Rename symbol across workspace |
+| **goto_definition** | Jump to symbol definition |
+| **find_references** | Find all usages across workspace |
+| **symbols** | Get file outline or workspace symbol search |
 
 ### `goto_definition`
 
@@ -86,3 +96,7 @@ oh-my-lsp rename <file-path> <new-name> [--line=0] [--character=0] [--timeout=60
 ```
 
 - If `--base-path` is set, that path is used as the LSP server workspace root (`cwd/root`) instead of auto-detecting the workspace root.
+
+## License
+
+[MIT](https://opensource.org/license/mit)
