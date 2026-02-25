@@ -1,6 +1,6 @@
 # oh-my-lsp CLI
 
-Built by referencing [`oh-my-opencode`'s `src/tools/lsp`](https://github.com/code-yeongyu/oh-my-opencode/dev/src/tools/lsp).
+Built by referencing `oh-my-opencode`'s [`src/tools/ast-grep`](https://github.com/code-yeongyu/oh-my-opencode/dev/src/tools/ast-grep), [`src/tools/lsp`](https://github.com/code-yeongyu/oh-my-opencode/dev/src/tools/lsp).
 
 ## Getting Started
 
@@ -37,7 +37,7 @@ npm run test
 Basic format:
 
 ```bash
-oh-my-lsp <command> <file-path> ...
+oh-my-lsp <command> <args...>
 ```
 
 ### LSP Tools (IDE Features for Agents)
@@ -50,6 +50,13 @@ oh-my-lsp <command> <file-path> ...
 | **goto_definition** | Jump to symbol definition |
 | **find_references** | Find all usages across workspace |
 | **symbols** | Get file outline or workspace symbol search |
+
+### AST-Grep Tools
+
+| Tool | Description |
+|------|-------------|
+| **ast_grep_search** | AST-aware code pattern search (25 languages) |
+| **ast_grep_replace** | AST-aware code replacement |
 
 ### `goto_definition`
 
@@ -96,6 +103,25 @@ oh-my-lsp rename <file-path> <new-name> [--line=0] [--character=0] [--timeout=60
 ```
 
 - If `--base-path` is set, that path is used as the LSP server workspace root (`cwd/root`) instead of auto-detecting the workspace root.
+
+### `ast_grep_search`
+
+```bash
+oh-my-lsp ast_grep_search <lang> <pattern> [--paths <path1> <path2> ...] [--globs <glob1> <glob2> ...] [--context <n>] [--timeout=300000] [--verbose]
+```
+
+- Meta variable examples: `$VAR` (single node), `$$$` (multiple nodes)
+- Pattern should be a complete AST node
+- Supports 25 languages (`bash`, `c`, `cpp`, `csharp`, `css`, `elixir`, `go`, `haskell`, `html`, `java`, `javascript`, `json`, `kotlin`, `lua`, `nix`, `php`, `python`, `ruby`, `rust`, `scala`, `solidity`, `swift`, `typescript`, `tsx`, `yaml`)
+
+### `ast_grep_replace`
+
+```bash
+oh-my-lsp ast_grep_replace <lang> <pattern> <rewrite> [--paths <path1> <path2> ...] [--globs <glob1> <glob2> ...] [--no-dry-run] [--timeout=300000] [--verbose]
+```
+
+- Dry-run preview is default
+- Use `--no-dry-run` to apply changes to files
 
 ## License
 

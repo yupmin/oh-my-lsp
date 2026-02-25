@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander"
+import { readFileSync } from "node:fs"
+import { resolve } from "node:path"
 
 import { lspManager } from "./lsp/client"
 import { gotoDefinition } from "./commands/goto-definition-command"
@@ -10,6 +12,9 @@ import {
   diagnostics,
   type DiagnosticSeverityFilter,
 } from "./commands/diagnostics-command"
+import { astGrepReplace, astGrepSearch } from "./commands/ast-grep-command"
+import { CLI_LANGUAGES, DEFAULT_TIMEOUT_MS } from "./ast-grep/constants"
+import type { CliLanguage } from "./ast-grep/types"
 
 type RuntimeOptions = {
   timeout: number
@@ -82,8 +87,34 @@ function parseSeverity(value: string): DiagnosticSeverityFilter {
   return value
 }
 
+function parseContext(value: string): number {
+  const parsed = Number(value)
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    throw new Error("context must be an integer >= 0")
+  }
+  return parsed
+}
+
+function parseLanguage(value: string): CliLanguage {
+  if (!(CLI_LANGUAGES as readonly string[]).includes(value)) {
+    throw new Error(`lang must be one of: ${CLI_LANGUAGES.join(", ")}`)
+  }
+  return value as CliLanguage
+}
+
 function toOneBasedLine(lineZeroBased: number): number {
   return lineZeroBased + 1
+}
+
+function loadCliVersion(): string {
+  try {
+    const packageJsonPath = resolve(__dirname, "..", "package.json")
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8")) as { version?: unknown }
+    if (typeof packageJson.version === "string" && packageJson.version.trim()) {
+      return packageJson.version
+    }
+  } catch {}
+  return "0.0.0"
 }
 
 function applyRuntimeOptions(options: RuntimeOptions): void {
@@ -113,7 +144,10 @@ async function runAndPrint(fn: () => Promise<string>): Promise<void> {
 
 const program = new Command()
 
-program.name("oh-my-lsp").description("LSP CLI ported from oh-my-opencode tools").version("0.1.0")
+program
+  .name("oh-my-lsp")
+  .description("LSP CLI ported from oh-my-opencode tools")
+  .version(loadCliVersion())
 
 program
   .command("goto_definition")
@@ -265,6 +299,79 @@ program
         })
     )
   })
+
+program
+  .command("ast_grep_search")
+  .description("AST-aware code pattern search (25 languages).")
+  .argument("<lang>", `Target language (${CLI_LANGUAGES.join(", ")})`)
+  .argument("<pattern>", "AST pattern with meta-variables ($VAR, $$$)")
+  .option("--paths <paths...>", "Paths to search (default: current directory)")
+  .option("--globs <globs...>", "Include/exclude globs (prefix ! to exclude)")
+  .option("--context <lines>", "Context lines around each match", parseContext)
+  .option("--timeout <ms>", "ast-grep command timeout in milliseconds", parseTimeout, DEFAULT_TIMEOUT_MS)
+  .option("--verbose", "Enable verbose runtime logging")
+  .action(
+    async (
+      lang: string,
+      pattern: string,
+      options: RuntimeOptions & {
+        paths?: string[]
+        globs?: string[]
+        context?: number
+      }
+    ) => {
+      applyRuntimeOptions(options)
+      await runAndPrint(
+        () =>
+          astGrepSearch({
+            pattern,
+            lang: parseLanguage(lang),
+            paths: options.paths,
+            globs: options.globs,
+            context: options.context,
+            timeoutMs: options.timeout,
+          })
+      )
+    }
+  )
+
+program
+  .command("ast_grep_replace")
+  .description("AST-aware code replacement.")
+  .argument("<lang>", `Target language (${CLI_LANGUAGES.join(", ")})`)
+  .argument("<pattern>", "AST pattern to match")
+  .argument("<rewrite>", "Replacement pattern (supports meta-variables)")
+  .option("--paths <paths...>", "Paths to search (default: current directory)")
+  .option("--globs <globs...>", "Include/exclude globs (prefix ! to exclude)")
+  .option("--no-dry-run", "Apply changes to files (default is dry-run preview)")
+  .option("--timeout <ms>", "ast-grep command timeout in milliseconds", parseTimeout, DEFAULT_TIMEOUT_MS)
+  .option("--verbose", "Enable verbose runtime logging")
+  .action(
+    async (
+      lang: string,
+      pattern: string,
+      rewrite: string,
+      options: RuntimeOptions & {
+        paths?: string[]
+        globs?: string[]
+        dryRun: boolean
+      }
+    ) => {
+      applyRuntimeOptions(options)
+      await runAndPrint(
+        () =>
+          astGrepReplace({
+            pattern,
+            rewrite,
+            lang: parseLanguage(lang),
+            paths: options.paths,
+            globs: options.globs,
+            dryRun: options.dryRun,
+            timeoutMs: options.timeout,
+          })
+      )
+    }
+  )
 
 program.parseAsync().catch((error: unknown) => {
   const message = error instanceof Error ? error.message : String(error)
