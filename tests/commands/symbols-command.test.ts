@@ -28,6 +28,7 @@ describe("symbols", () => {
   })
 
   it("formats workspace symbols and applies limit", async () => {
+    const openFile = vi.fn().mockResolvedValue(undefined)
     const workspaceSymbols = vi.fn().mockResolvedValue([
       {
         name: "alpha",
@@ -54,7 +55,7 @@ describe("symbols", () => {
     ])
 
     mockWithLspClient.mockImplementation(async (_filePath, fn) =>
-      fn({ workspaceSymbols } as never)
+      fn({ openFile, workspaceSymbols } as never)
     )
 
     const output = await symbols({
@@ -70,9 +71,47 @@ describe("symbols", () => {
       expect.any(Function),
       { basePath: "/tmp/project" }
     )
+    expect(openFile).toHaveBeenCalledWith("/tmp/a.ts")
     expect(workspaceSymbols).toHaveBeenCalledWith("a")
     expect(output).toContain("Found 2 symbols (showing first 1):")
     expect(output).toContain("alpha (Function) - /tmp/a.ts:2:2")
+  })
+
+  it("opens file before requesting workspace symbols", async () => {
+    const callOrder: string[] = []
+    const openFile = vi.fn(async () => {
+      callOrder.push("openFile")
+    })
+    const workspaceSymbols = vi.fn(async () => {
+      callOrder.push("workspaceSymbols")
+      return [
+        {
+          name: "alpha",
+          kind: 12,
+          location: {
+            uri: "file:///tmp/a.ts",
+            range: {
+              start: { line: 1, character: 2 },
+              end: { line: 1, character: 8 },
+            },
+          },
+        },
+      ]
+    })
+
+    mockWithLspClient.mockImplementation(async (_filePath, fn) =>
+      fn({ openFile, workspaceSymbols } as never)
+    )
+
+    await symbols({
+      filePath: "/tmp/a.ts",
+      scope: "workspace",
+      query: "a",
+    })
+
+    expect(openFile).toHaveBeenCalledWith("/tmp/a.ts")
+    expect(workspaceSymbols).toHaveBeenCalledWith("a")
+    expect(callOrder).toEqual(["openFile", "workspaceSymbols"])
   })
 
   it("formats document symbols", async () => {

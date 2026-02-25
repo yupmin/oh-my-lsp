@@ -23,6 +23,7 @@ export async function symbols(args: SymbolsArgs): Promise<string> {
       const result = await withLspClient(
         args.filePath,
         async (client) => {
+          await client.openFile(args.filePath)
           return (await client.workspaceSymbols(args.query!)) as SymbolInfo[] | null
         },
         { basePath: args.basePath }
