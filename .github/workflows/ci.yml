@@ -192,7 +192,20 @@ jobs:
           set -euo pipefail
           if ! command -v lua-language-server >/dev/null 2>&1; then
             sudo apt-get update
-            sudo apt-get install -y lua-language-server
+            if ! sudo apt-get install -y lua-language-server; then
+              LUA_LS_TAG="$(curl -sI https://github.com/LuaLS/lua-language-server/releases/latest | tr -d '\r' | awk -F'/' '/^location:/{print $NF}' | tail -n 1)"
+              if [ -z "$LUA_LS_TAG" ]; then
+                echo "Failed to resolve LuaLS latest release tag"
+                exit 1
+              fi
+              LUA_LS_URL="https://github.com/LuaLS/lua-language-server/releases/download/${LUA_LS_TAG}/lua-language-server-${LUA_LS_TAG}-linux-x64.tar.gz"
+              mkdir -p "$HOME/.local/lua-language-server" "$HOME/.local/bin"
+              curl -fsSL "$LUA_LS_URL" -o /tmp/lua-language-server.tar.gz
+              tar -xzf /tmp/lua-language-server.tar.gz -C "$HOME/.local/lua-language-server"
+              chmod +x "$HOME/.local/lua-language-server/bin/lua-language-server"
+              ln -sf "$HOME/.local/lua-language-server/bin/lua-language-server" "$HOME/.local/bin/lua-language-server"
+              echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+            fi
           fi
 
       - name: Verify server installation (TypeScript)
