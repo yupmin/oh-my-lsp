@@ -26,17 +26,17 @@ jobs:
       - name: Run test suite
         run: npm run test
 
-  language-cli-tests:
-    name: language-cli-tests (${{ matrix.language }})
+  language-cli-tests-group-1:
+    name: language-cli-tests-group-1 (${{ matrix.language }})
     needs: test
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        language: [typescript, java, javascript, python, php, go, c, cpp, csharp, css, bash, yaml, dockerfile, ruby, rust, kotlin, lua]
+        language: [java, kotlin, go, ruby]
 
-    steps:
+    steps: &language_cli_tests_steps
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -278,3 +278,23 @@ jobs:
 
       - name: Run CLI integration test
         run: npm run test:cli:${{ matrix.language }}
+
+  language-cli-tests-group-2:
+    name: language-cli-tests-group-2 (${{ matrix.language }})
+    needs: language-cli-tests-group-1
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [typescript, javascript, python, php, rust, lua]
+    steps: *language_cli_tests_steps
+
+  language-cli-tests-group-3:
+    name: language-cli-tests-group-3 (${{ matrix.language }})
+    needs: language-cli-tests-group-2
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [c, cpp, csharp, css, bash, yaml, dockerfile]
+    steps: *language_cli_tests_steps
