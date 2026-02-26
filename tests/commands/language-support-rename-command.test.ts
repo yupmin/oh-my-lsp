@@ -34,6 +34,7 @@ const fullFeatureLanguages = [
   { name: "cpp", filePath: "/tmp/sample.cpp" },
   { name: "csharp", filePath: "/tmp/sample.cs" },
   { name: "css", filePath: "/tmp/sample.css" },
+  { name: "lua", filePath: "/tmp/sample.lua" },
 ] as const
 
 describe("language support (rename)", () => {
