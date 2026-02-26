@@ -73,6 +73,8 @@ oh-my-lsp <command> <args...>
 | TypeScript | O | O | O | O | O | O |
 | YAML | O | O | X | X | X | X |
 
+> Bash note: `goto_definition`, `find_references`, `prepare_rename`, and `rename` are supported only within the same file.
+
 ### AST-Grep Tools
 
 | Tool | Description |
