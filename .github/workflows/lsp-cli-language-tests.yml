@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [typescript, java, javascript, python, php]
+        language: [typescript, java, javascript, python, php, go, bash, yaml, dockerfile]
 
     steps:
       - name: Checkout
@@ -36,6 +36,12 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+
+      - name: Setup Go
+        if: matrix.language == 'go'
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
 
       - name: Install TypeScript language server
         if: matrix.language == 'typescript' || matrix.language == 'javascript'
@@ -74,6 +80,22 @@ jobs:
         if: matrix.language == 'php'
         run: npm install -g intelephense
 
+      - name: Install Go language server
+        if: matrix.language == 'go'
+        run: go install golang.org/x/tools/gopls@latest
+
+      - name: Install Bash language server
+        if: matrix.language == 'bash'
+        run: npm install -g bash-language-server
+
+      - name: Install YAML language server
+        if: matrix.language == 'yaml'
+        run: npm install -g yaml-language-server
+
+      - name: Install Dockerfile language server
+        if: matrix.language == 'dockerfile'
+        run: npm install -g dockerfile-language-server-nodejs
+
       - name: Verify server installation (TypeScript)
         if: matrix.language == 'typescript'
         run: command -v typescript-language-server
@@ -94,6 +116,22 @@ jobs:
         if: matrix.language == 'php'
         run: command -v intelephense
 
+      - name: Verify server installation (Go)
+        if: matrix.language == 'go'
+        run: command -v gopls
+
+      - name: Verify server installation (Bash)
+        if: matrix.language == 'bash'
+        run: command -v bash-language-server
+
+      - name: Verify server installation (YAML)
+        if: matrix.language == 'yaml'
+        run: command -v yaml-language-server
+
+      - name: Verify server installation (Dockerfile)
+        if: matrix.language == 'dockerfile'
+        run: command -v docker-langserver
+
       - name: Run TypeScript CLI integration test
         if: matrix.language == 'typescript'
         run: npm run test:cli:typescript
@@ -113,3 +151,19 @@ jobs:
       - name: Run PHP CLI integration test
         if: matrix.language == 'php'
         run: npm run test:cli:php
+
+      - name: Run Go CLI integration test
+        if: matrix.language == 'go'
+        run: npm run test:cli:go
+
+      - name: Run Bash CLI integration test
+        if: matrix.language == 'bash'
+        run: npm run test:cli:bash
+
+      - name: Run YAML CLI integration test
+        if: matrix.language == 'yaml'
+        run: npm run test:cli:yaml
+
+      - name: Run Dockerfile CLI integration test
+        if: matrix.language == 'dockerfile'
+        run: npm run test:cli:dockerfile
