@@ -6,6 +6,7 @@ describe("getLanguageId", () => {
   it("returns mapped language id for known extension", () => {
     expect(getLanguageId(".ts")).toBe("typescript")
     expect(getLanguageId(".tsx")).toBe("typescriptreact")
+    expect(getLanguageId(".rb")).toBe("ruby")
   })
 
   it("returns plaintext for unknown extension", () => {

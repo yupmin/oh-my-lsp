@@ -34,6 +34,7 @@ export function createFixtureWorkspace(
     | "cpp"
     | "csharp"
     | "css"
+    | "ruby"
 ): string {
   const sourceDir = join(process.cwd(), "tests", "fixtures", language)
   const workspaceDir = mkdtempSync(join(tmpdir(), `oh-my-lsp-${language}-`))
