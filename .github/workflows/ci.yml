@@ -169,7 +169,7 @@ jobs:
           if command -v kotlin-lsp >/dev/null 2>&1; then
             exit 0
           fi
-          KOTLIN_LSP_ZIP_URL="$(curl -fsSL https://github.com/Kotlin/kotlin-lsp/releases/latest | rg -o 'https://download-cdn.jetbrains.com/kotlin-lsp[^\" ]+linux-x64.zip' | head -n 1)"
+          KOTLIN_LSP_ZIP_URL="$(curl -fsSL https://github.com/Kotlin/kotlin-lsp/releases/latest | grep -o 'https://download-cdn.jetbrains.com/kotlin-lsp[^\" ]*linux-x64.zip' | head -n 1)"
           if [ -z "$KOTLIN_LSP_ZIP_URL" ]; then
             echo "Failed to resolve Kotlin LSP Linux artifact URL"
             exit 1
