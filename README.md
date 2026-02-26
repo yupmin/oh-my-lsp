@@ -125,4 +125,4 @@ oh-my-lsp ast_grep_replace <lang> <pattern> <rewrite> [--paths <path1> <path2> .
 
 ## License
 
-[MIT](https://opensource.org/license/mit)
+MIT License - see LICENSE file for details
