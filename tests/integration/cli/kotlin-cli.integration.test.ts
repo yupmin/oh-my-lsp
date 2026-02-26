@@ -94,6 +94,30 @@ describeIfKotlinLs("CLI integration (Kotlin)", () => {
     expect(result.stdout).toMatch(/:2:\d+/)
   }, 240_000)
 
+  it("runs find_references", () => {
+    const { workspace, sampleFile } = createWorkspaceFiles()
+    const callPos = findNthOccurrencePosition(sampleFile, "add(", 2)
+
+    const result = runCli([
+      "find_references",
+      sampleFile,
+      "--line",
+      String(callPos.line),
+      "--character",
+      String(callPos.character),
+      "--base-path",
+      workspace,
+      "--timeout",
+      "120000",
+    ], 240_000)
+
+    expectCliSuccess(result)
+    const referenceLines = result.stdout
+      .split("\n")
+      .filter((line) => line.includes(sampleFile))
+    expect(referenceLines.length).toBeGreaterThanOrEqual(2)
+  }, 240_000)
+
   it("runs rename", () => {
     const { workspace, sampleFile } = createWorkspaceFiles()
     const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)

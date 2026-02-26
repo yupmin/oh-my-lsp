@@ -64,7 +64,7 @@ oh-my-lsp <command> <args...>
 | Go | O | O | O | O | O | O |
 | Java | O | O | O | O | O | O |
 | JavaScript | O | O | O | O | O | O |
-| Kotlin | O | O | O | X | X | O |
+| Kotlin | O | O | O | O | X | O |
 | Lua | O | O | O | O | O | O |
 | PHP | O | O | O | O | O | O |
 | Python | O | O | O | O | O | O |
