@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [typescript, java, javascript, python, php, go, c, cpp, csharp, css, bash, yaml, dockerfile]
+        language: [typescript, java, javascript, python, php, go, c, cpp, csharp, css, bash, yaml, dockerfile, elixir, haskell, html, json, kotlin, lua, nix, ruby, rust, scala, solidity, swift, tsx]
 
     steps:
       - name: Checkout
@@ -51,7 +51,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Install TypeScript language server
-        if: matrix.language == 'typescript' || matrix.language == 'javascript'
+        if: matrix.language == 'typescript' || matrix.language == 'javascript' || matrix.language == 'tsx'
         run: npm install -g typescript-language-server typescript
 
       - name: Install jdtls
@@ -104,7 +104,7 @@ jobs:
           echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
 
       - name: Install CSS language server
-        if: matrix.language == 'css'
+        if: matrix.language == 'css' || matrix.language == 'html' || matrix.language == 'json'
         run: npm install -g @biomejs/biome
 
       - name: Install Bash language server
@@ -121,6 +121,10 @@ jobs:
 
       - name: Verify server installation (TypeScript)
         if: matrix.language == 'typescript'
+        run: command -v typescript-language-server
+
+      - name: Verify server installation (TSX)
+        if: matrix.language == 'tsx'
         run: command -v typescript-language-server
 
       - name: Verify server installation (JavaScript)
@@ -157,6 +161,14 @@ jobs:
 
       - name: Verify server installation (CSS)
         if: matrix.language == 'css'
+        run: command -v biome
+
+      - name: Verify server installation (HTML)
+        if: matrix.language == 'html'
+        run: command -v biome
+
+      - name: Verify server installation (JSON)
+        if: matrix.language == 'json'
         run: command -v biome
 
       - name: Verify server installation (Bash)
@@ -222,3 +234,55 @@ jobs:
       - name: Run Dockerfile CLI integration test
         if: matrix.language == 'dockerfile'
         run: npm run test:cli:dockerfile
+
+      - name: Run Elixir CLI integration test
+        if: matrix.language == 'elixir'
+        run: npm run test:cli:elixir
+
+      - name: Run Haskell CLI integration test
+        if: matrix.language == 'haskell'
+        run: npm run test:cli:haskell
+
+      - name: Run HTML CLI integration test
+        if: matrix.language == 'html'
+        run: npm run test:cli:html
+
+      - name: Run JSON CLI integration test
+        if: matrix.language == 'json'
+        run: npm run test:cli:json
+
+      - name: Run Kotlin CLI integration test
+        if: matrix.language == 'kotlin'
+        run: npm run test:cli:kotlin
+
+      - name: Run Lua CLI integration test
+        if: matrix.language == 'lua'
+        run: npm run test:cli:lua
+
+      - name: Run Nix CLI integration test
+        if: matrix.language == 'nix'
+        run: npm run test:cli:nix
+
+      - name: Run Ruby CLI integration test
+        if: matrix.language == 'ruby'
+        run: npm run test:cli:ruby
+
+      - name: Run Rust CLI integration test
+        if: matrix.language == 'rust'
+        run: npm run test:cli:rust
+
+      - name: Run Scala CLI integration test
+        if: matrix.language == 'scala'
+        run: npm run test:cli:scala
+
+      - name: Run Solidity CLI integration test
+        if: matrix.language == 'solidity'
+        run: npm run test:cli:solidity
+
+      - name: Run Swift CLI integration test
+        if: matrix.language == 'swift'
+        run: npm run test:cli:swift
+
+      - name: Run TSX CLI integration test
+        if: matrix.language == 'tsx'
+        run: npm run test:cli:tsx
