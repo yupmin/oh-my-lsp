@@ -20,7 +20,20 @@ export function runCli(args: string[], timeoutMs = 180_000): SpawnSyncReturns<st
 }
 
 export function createFixtureWorkspace(
-  language: "typescript" | "java" | "javascript" | "python" | "php" | "go" | "bash" | "yaml" | "dockerfile"
+  language:
+    | "typescript"
+    | "java"
+    | "javascript"
+    | "python"
+    | "php"
+    | "go"
+    | "bash"
+    | "yaml"
+    | "dockerfile"
+    | "c"
+    | "cpp"
+    | "csharp"
+    | "css"
 ): string {
   const sourceDir = join(process.cwd(), "fixtures", language)
   const workspaceDir = mkdtempSync(join(tmpdir(), `oh-my-lsp-${language}-`))
