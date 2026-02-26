@@ -22,6 +22,7 @@ const symbolDiagnosticLanguages = [
   { name: "css", filePath: "/tmp/sample.css" },
   { name: "yaml", filePath: "/tmp/sample.yaml" },
   { name: "dockerfile", filePath: "/tmp/sample.dockerfile" },
+  { name: "lua", filePath: "/tmp/sample.lua" },
 ] as const
 
 describe("language support (symbols/diagnostics)", () => {
