@@ -9,7 +9,7 @@
     "dev": "tsx src/index.ts",
     "build": "tsup && node scripts/fix-shebang.cjs",
     "check": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --exclude 'tests/integration/cli/**'",
     "test:watch": "vitest",
     "test:cli:typescript": "npm run build && vitest run tests/integration/cli/typescript-cli.integration.test.ts",
     "test:cli:java": "npm run build && vitest run tests/integration/cli/java-cli.integration.test.ts",
