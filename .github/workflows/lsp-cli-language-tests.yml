@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [typescript, java, javascript, python, php, go, bash, yaml, dockerfile]
+        language: [typescript, java, javascript, python, php, go, c, cpp, csharp, css, bash, yaml, dockerfile]
 
     steps:
       - name: Checkout
@@ -42,6 +42,12 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.23'
+
+      - name: Setup .NET
+        if: matrix.language == 'csharp'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
       - name: Install TypeScript language server
         if: matrix.language == 'typescript' || matrix.language == 'javascript'
@@ -84,6 +90,22 @@ jobs:
         if: matrix.language == 'go'
         run: go install golang.org/x/tools/gopls@latest
 
+      - name: Install C/C++ language server
+        if: matrix.language == 'c' || matrix.language == 'cpp'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clangd
+
+      - name: Install C# language server
+        if: matrix.language == 'csharp'
+        run: |
+          dotnet tool install -g csharp-ls
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      - name: Install CSS language server
+        if: matrix.language == 'css'
+        run: npm install -g @biomejs/biome
+
       - name: Install Bash language server
         if: matrix.language == 'bash'
         run: npm install -g bash-language-server
@@ -120,6 +142,22 @@ jobs:
         if: matrix.language == 'go'
         run: command -v gopls
 
+      - name: Verify server installation (C)
+        if: matrix.language == 'c'
+        run: command -v clangd
+
+      - name: Verify server installation (C++)
+        if: matrix.language == 'cpp'
+        run: command -v clangd
+
+      - name: Verify server installation (C#)
+        if: matrix.language == 'csharp'
+        run: command -v csharp-ls
+
+      - name: Verify server installation (CSS)
+        if: matrix.language == 'css'
+        run: command -v biome
+
       - name: Verify server installation (Bash)
         if: matrix.language == 'bash'
         run: command -v bash-language-server
@@ -155,6 +193,22 @@ jobs:
       - name: Run Go CLI integration test
         if: matrix.language == 'go'
         run: npm run test:cli:go
+
+      - name: Run C CLI integration test
+        if: matrix.language == 'c'
+        run: npm run test:cli:c
+
+      - name: Run C++ CLI integration test
+        if: matrix.language == 'cpp'
+        run: npm run test:cli:cpp
+
+      - name: Run C# CLI integration test
+        if: matrix.language == 'csharp'
+        run: npm run test:cli:csharp
+
+      - name: Run CSS CLI integration test
+        if: matrix.language == 'css'
+        run: npm run test:cli:css
 
       - name: Run Bash CLI integration test
         if: matrix.language == 'bash'
