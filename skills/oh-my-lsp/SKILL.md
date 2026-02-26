@@ -7,7 +7,32 @@ description: Run and interpret the oh-my-lsp CLI for code navigation, refactorin
 
 Use this skill to execute `oh-my-lsp` commands reliably and report actionable results.
 
+## Recommended Workflow
+
+This section is mandatory for AI-agent execution.
+
+| Case | When to choose | Required command sequence |
+| --- | --- | --- |
+| `A. Initial code understanding` | User asks where/how code is structured or connected | `diagnostics` -> `symbols --scope document` -> `symbols --scope workspace --query <name>` |
+| `B. Definition and usage tracing` | User asks "where defined?" or "who uses this?" | `goto_definition` -> `find_references` |
+| `C. Rename/refactor intent` | User asks rename or symbol rename feasibility | `prepare_rename` -> `rename` -> `diagnostics` |
+| `D. Pattern-based refactor` | User asks broad structural replacement | `ast_grep_search` -> `ast_grep_replace` (dry-run) -> `ast_grep_replace --no-dry-run` (only if requested) -> `diagnostics` |
+| `E. Build/test error triage` | User provides failing test/log and asks root cause | `diagnostics` -> `goto_definition` -> `find_references` -> `symbols --scope document` |
+
+Case notes:
+- Bash: `goto_definition`, `find_references`, `prepare_rename`, `rename` are supported only within the same file scope.
+- If a required command fails once, retry once with explicit `--base-path` and corrected `--line/--character`.
+
 ## For AI Agents
+
+### Mandatory Trigger Policy
+
+When this skill is active, `## Recommended Workflow` is not optional.
+
+- AI agent MUST choose one trigger case first.
+- AI agent MUST run the listed commands in order for that case.
+- AI agent MUST report executed commands and key output lines (`file:line`) before conclusions.
+- AI agent MUST run mutating commands (`rename`, `ast_grep_replace --no-dry-run`) only when explicitly requested.
 
 ### Working In This Directory
 
@@ -39,7 +64,7 @@ npx oh-my-lsp diagnostics src/index.ts --severity error
 // Check if rename is valid
 npx oh-my-lsp prepare_rename src/index.ts --line 10 --character 15
 
-// Preview rename (does NOT apply changes)
+// Apply rename edits (mutates files)
 npx oh-my-lsp rename src/index.ts newFunction --line 10 --character 15
 ```
 
@@ -48,7 +73,7 @@ npx oh-my-lsp rename src/index.ts newFunction --line 10 --character 15
 **Pattern search with meta-variables:**
 ```shell
 // Find all function declarations
-npx oh-my-lsp ast_grep_search typescript "function $NAME($$$ARGS)" --path src
+npx oh-my-lsp ast_grep_search typescript "function $NAME($$$ARGS)" --paths src
 
 // Find console.log calls
 npx oh-my-lsp ast_grep_search typescript "console.log($MSG)"
@@ -139,16 +164,6 @@ npx oh-my-lsp diagnostics src/index.ts
   - Requires: `<lang> <pattern> <rewrite>`
   - Options: `--paths <path...> --globs <glob...> --no-dry-run --timeout <ms>`
   - Dry-run is default; use `--no-dry-run` to apply edits.
-
-## Recommended Workflow
-
-1. Run `ast_grep_search` before `ast_grep_replace` to preview target locations.
-2. Run `ast_grep_replace` with default dry-run first; only use `--no-dry-run` when user requested real edits.
-3. Run `diagnostics` first to detect syntax/type blockers.
-4. Run `symbols` to inspect document/workspace symbol structure.
-5. Run `goto_definition` or `find_references` for navigation.
-6. Run `prepare_rename` before `rename`.
-7. Run `rename` only after reporting expected file modifications.
 
 ## Operational Rules
 
