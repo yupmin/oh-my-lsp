@@ -26,7 +26,8 @@
     "test:cli:dockerfile": "npm run build && vitest run tests/integration/cli/dockerfile-cli.integration.test.ts",
     "test:cli:ruby": "npm run build && vitest run tests/integration/cli/ruby-cli.integration.test.ts",
     "test:cli:rust": "npm run build && vitest run tests/integration/cli/rust-cli.integration.test.ts",
-    "test:cli": "npm run test:cli:typescript && npm run test:cli:java && npm run test:cli:javascript && npm run test:cli:python && npm run test:cli:php && npm run test:cli:go && npm run test:cli:c && npm run test:cli:cpp && npm run test:cli:csharp && npm run test:cli:css && npm run test:cli:bash && npm run test:cli:yaml && npm run test:cli:dockerfile && npm run test:cli:ruby && npm run test:cli:rust"
+    "test:cli:kotlin": "npm run build && vitest run tests/integration/cli/kotlin-cli.integration.test.ts",
+    "test:cli": "npm run test:cli:typescript && npm run test:cli:java && npm run test:cli:javascript && npm run test:cli:python && npm run test:cli:php && npm run test:cli:go && npm run test:cli:c && npm run test:cli:cpp && npm run test:cli:csharp && npm run test:cli:css && npm run test:cli:bash && npm run test:cli:yaml && npm run test:cli:dockerfile && npm run test:cli:ruby && npm run test:cli:rust && npm run test:cli:kotlin"
   },
   "keywords": [
     "cli",

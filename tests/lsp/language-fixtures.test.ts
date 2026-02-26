@@ -57,6 +57,13 @@ const languageCases = [
     extension: ".rs",
     expectedLanguage: "rust",
   },
+  {
+    folder: "kotlin",
+    sampleFile: "sample.kt",
+    diagnosticsFailFile: "diagnostics_fail.kt",
+    extension: ".kt",
+    expectedLanguage: "kotlin",
+  },
 ] as const
 
 describe("language fixtures", () => {
