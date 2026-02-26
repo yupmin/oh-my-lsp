@@ -146,7 +146,9 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y ruby-full
           fi
-          gem install rubocop
+          gem install --user-install rubocop
+          GEM_BIN_DIR="$(ruby -r rubygems -e 'puts Gem.user_dir')/bin"
+          echo "$GEM_BIN_DIR" >> "$GITHUB_PATH"
 
       - name: Install Rust language server
         if: matrix.language == 'rust'
