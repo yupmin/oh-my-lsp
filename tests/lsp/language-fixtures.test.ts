@@ -50,6 +50,13 @@ const languageCases = [
     extension: ".rb",
     expectedLanguage: "ruby",
   },
+  {
+    folder: "rust",
+    sampleFile: "src/main.rs",
+    diagnosticsFailFile: "diagnostics_fail.rs",
+    extension: ".rs",
+    expectedLanguage: "rust",
+  },
 ] as const
 
 describe("language fixtures", () => {

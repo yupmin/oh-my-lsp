@@ -27,6 +27,7 @@ export function createFixtureWorkspace(
     | "python"
     | "php"
     | "go"
+    | "rust"
     | "bash"
     | "yaml"
     | "dockerfile"
