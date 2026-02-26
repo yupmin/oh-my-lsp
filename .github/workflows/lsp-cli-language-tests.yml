@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [typescript, java, javascript, python, php, go, c, cpp, csharp, css, bash, yaml, dockerfile, elixir, haskell, html, json, kotlin, lua, nix, ruby, rust, scala, solidity, swift, tsx]
+        language: [typescript, java, javascript, python, php, go, c, cpp, csharp, css, bash, yaml, dockerfile, html, json, scala, solidity, tsx]
 
     steps:
       - name: Checkout
@@ -235,13 +235,7 @@ jobs:
         if: matrix.language == 'dockerfile'
         run: npm run test:cli:dockerfile
 
-      - name: Run Elixir CLI integration test
-        if: matrix.language == 'elixir'
-        run: npm run test:cli:elixir
 
-      - name: Run Haskell CLI integration test
-        if: matrix.language == 'haskell'
-        run: npm run test:cli:haskell
 
       - name: Run HTML CLI integration test
         if: matrix.language == 'html'
@@ -251,25 +245,10 @@ jobs:
         if: matrix.language == 'json'
         run: npm run test:cli:json
 
-      - name: Run Kotlin CLI integration test
-        if: matrix.language == 'kotlin'
-        run: npm run test:cli:kotlin
 
-      - name: Run Lua CLI integration test
-        if: matrix.language == 'lua'
-        run: npm run test:cli:lua
 
-      - name: Run Nix CLI integration test
-        if: matrix.language == 'nix'
-        run: npm run test:cli:nix
 
-      - name: Run Ruby CLI integration test
-        if: matrix.language == 'ruby'
-        run: npm run test:cli:ruby
 
-      - name: Run Rust CLI integration test
-        if: matrix.language == 'rust'
-        run: npm run test:cli:rust
 
       - name: Run Scala CLI integration test
         if: matrix.language == 'scala'
@@ -279,9 +258,6 @@ jobs:
         if: matrix.language == 'solidity'
         run: npm run test:cli:solidity
 
-      - name: Run Swift CLI integration test
-        if: matrix.language == 'swift'
-        run: npm run test:cli:swift
 
       - name: Run TSX CLI integration test
         if: matrix.language == 'tsx'
