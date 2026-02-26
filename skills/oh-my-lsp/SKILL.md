@@ -39,7 +39,7 @@ npx oh-my-lsp diagnostics src/index.ts --severity error
 // Check if rename is valid
 npx oh-my-lsp prepare_rename src/index.ts --line 10 --character 15
 
-// Preview rename (does NOT apply changes)
+// Rename symbol (applies changes across workspace)
 npx oh-my-lsp rename src/index.ts newFunction --line 10 --character 15
 ```
 
@@ -48,7 +48,7 @@ npx oh-my-lsp rename src/index.ts newFunction --line 10 --character 15
 **Pattern search with meta-variables:**
 ```shell
 // Find all function declarations
-npx oh-my-lsp ast_grep_search typescript "function $NAME($$$ARGS)" --path src
+npx oh-my-lsp ast_grep_search typescript "function $NAME($$$ARGS)" --paths src
 
 // Find console.log calls
 npx oh-my-lsp ast_grep_search typescript "console.log($MSG)"
@@ -63,10 +63,10 @@ npx oh-my-lsp ast_grep_search typescript "$X === null"
 **AST-aware replacement:**
 ```shell
 // Convert console.log to logger (dry run by default)
-npx oh-my-lsp ast_grep_replace typescript "console.log($MSG)" --replacement "logger.info($MSG)"
+npx oh-my-lsp ast_grep_replace typescript "console.log($MSG)" "logger.info($MSG)"
 
 // Convert var to const
-npx oh-my-lsp ast_grep_replace typescript "var $NAME = $VALUE" --replacement "const $NAME = $VALUE" --no-dry-run
+npx oh-my-lsp ast_grep_replace typescript "var $NAME = $VALUE" "const $NAME = $VALUE" --no-dry-run
 ```
 
 ## Run CLI
