@@ -1,0 +1,115 @@
+name: LSP CLI Language Tests
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+jobs:
+  language-cli-tests:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [typescript, java, javascript, python, php]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Java
+        if: matrix.language == 'java'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install TypeScript language server
+        if: matrix.language == 'typescript' || matrix.language == 'javascript'
+        run: npm install -g typescript-language-server typescript
+
+      - name: Install jdtls
+        if: matrix.language == 'java'
+        run: |
+          set -euo pipefail
+
+          if command -v jdtls >/dev/null 2>&1; then
+            exit 0
+          fi
+
+          sudo apt-get update
+          if sudo apt-get install -y jdtls; then
+            exit 0
+          fi
+
+          mkdir -p "$HOME/.local/jdtls"
+          curl -fsSL "https://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz" -o /tmp/jdtls.tar.gz
+          tar -xzf /tmp/jdtls.tar.gz -C "$HOME/.local/jdtls"
+          JDTLS_BIN="$(find "$HOME/.local/jdtls" -type f -name jdtls | head -n 1)"
+          if [ -z "$JDTLS_BIN" ]; then
+            echo "jdtls binary not found after fallback installation"
+            exit 1
+          fi
+          chmod +x "$JDTLS_BIN"
+          echo "$(dirname "$JDTLS_BIN")" >> "$GITHUB_PATH"
+
+      - name: Install Python language server
+        if: matrix.language == 'python'
+        run: npm install -g pyright
+
+      - name: Install PHP language server
+        if: matrix.language == 'php'
+        run: npm install -g intelephense
+
+      - name: Verify server installation (TypeScript)
+        if: matrix.language == 'typescript'
+        run: command -v typescript-language-server
+
+      - name: Verify server installation (JavaScript)
+        if: matrix.language == 'javascript'
+        run: command -v typescript-language-server
+
+      - name: Verify server installation (Java)
+        if: matrix.language == 'java'
+        run: command -v jdtls
+
+      - name: Verify server installation (Python)
+        if: matrix.language == 'python'
+        run: command -v pyright-langserver
+
+      - name: Verify server installation (PHP)
+        if: matrix.language == 'php'
+        run: command -v intelephense
+
+      - name: Run TypeScript CLI integration test
+        if: matrix.language == 'typescript'
+        run: npm run test:cli:typescript
+
+      - name: Run Java CLI integration test
+        if: matrix.language == 'java'
+        run: npm run test:cli:java
+
+      - name: Run JavaScript CLI integration test
+        if: matrix.language == 'javascript'
+        run: npm run test:cli:javascript
+
+      - name: Run Python CLI integration test
+        if: matrix.language == 'python'
+        run: npm run test:cli:python
+
+      - name: Run PHP CLI integration test
+        if: matrix.language == 'php'
+        run: npm run test:cli:php

@@ -10,7 +10,13 @@
     "build": "tsup && node scripts/fix-shebang.cjs",
     "check": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:cli:typescript": "npm run build && vitest run tests/integration/cli/typescript-cli.integration.test.ts",
+    "test:cli:java": "npm run build && vitest run tests/integration/cli/java-cli.integration.test.ts",
+    "test:cli:javascript": "npm run build && vitest run tests/integration/cli/javascript-cli.integration.test.ts",
+    "test:cli:python": "npm run build && vitest run tests/integration/cli/python-cli.integration.test.ts",
+    "test:cli:php": "npm run build && vitest run tests/integration/cli/php-cli.integration.test.ts",
+    "test:cli": "npm run test:cli:typescript && npm run test:cli:java && npm run test:cli:javascript && npm run test:cli:python && npm run test:cli:php"
   },
   "keywords": [
     "cli",
