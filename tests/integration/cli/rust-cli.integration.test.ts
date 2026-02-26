@@ -73,6 +73,53 @@ describeIfRustServer("CLI integration (Rust)", () => {
     expect(result.stdout).toMatch(/ at \d+:\d+:/)
   }, 120_000)
 
+
+  it("runs find_references", () => {
+    const { workspace, sampleFile } = createSampleWorkspaceFiles()
+    const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
+
+    const result = runCli([
+      "find_references",
+      sampleFile,
+      "--line",
+      String(definitionPos.line),
+      "--character",
+      String(definitionPos.character),
+      "--base-path",
+      workspace,
+      "--timeout",
+      "60000",
+    ])
+
+    expectCliSuccess(result)
+
+    const referenceLines = result.stdout
+      .split("\n")
+      .filter((line) => line.trim().startsWith(sampleFile))
+    expect(referenceLines.length).toBeGreaterThanOrEqual(2)
+  }, 120_000)
+
+  it("runs prepare_rename", () => {
+    const { workspace, sampleFile } = createSampleWorkspaceFiles()
+    const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
+
+    const result = runCli([
+      "prepare_rename",
+      sampleFile,
+      "--line",
+      String(definitionPos.line),
+      "--character",
+      String(definitionPos.character),
+      "--base-path",
+      workspace,
+      "--timeout",
+      "60000",
+    ])
+
+    expectCliSuccess(result)
+    expect(result.stdout).toContain("Rename")
+  }, 120_000)
+
   it("runs goto_definition", () => {
     const { workspace, sampleFile } = createSampleWorkspaceFiles()
     const callPos = findNthOccurrencePosition(sampleFile, "add(", 2)

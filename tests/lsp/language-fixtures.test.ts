@@ -52,7 +52,7 @@ const languageCases = [
   },
   {
     folder: "rust",
-    sampleFile: "sample.rs",
+    sampleFile: "src/main.rs",
     diagnosticsFailFile: "diagnostics_fail.rs",
     extension: ".rs",
     expectedLanguage: "rust",
