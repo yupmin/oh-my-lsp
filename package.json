@@ -17,10 +17,14 @@
     "test:cli:python": "npm run build && vitest run tests/integration/cli/python-cli.integration.test.ts",
     "test:cli:php": "npm run build && vitest run tests/integration/cli/php-cli.integration.test.ts",
     "test:cli:go": "npm run build && vitest run tests/integration/cli/go-cli.integration.test.ts",
+    "test:cli:c": "npm run build && vitest run tests/integration/cli/c-cli.integration.test.ts",
+    "test:cli:cpp": "npm run build && vitest run tests/integration/cli/cpp-cli.integration.test.ts",
+    "test:cli:csharp": "npm run build && vitest run tests/integration/cli/csharp-cli.integration.test.ts",
+    "test:cli:css": "npm run build && vitest run tests/integration/cli/css-cli.integration.test.ts",
     "test:cli:bash": "npm run build && vitest run tests/integration/cli/bash-cli.integration.test.ts",
     "test:cli:yaml": "npm run build && vitest run tests/integration/cli/yaml-cli.integration.test.ts",
     "test:cli:dockerfile": "npm run build && vitest run tests/integration/cli/dockerfile-cli.integration.test.ts",
-    "test:cli": "npm run test:cli:typescript && npm run test:cli:java && npm run test:cli:javascript && npm run test:cli:python && npm run test:cli:php && npm run test:cli:go && npm run test:cli:bash && npm run test:cli:yaml && npm run test:cli:dockerfile"
+    "test:cli": "npm run test:cli:typescript && npm run test:cli:java && npm run test:cli:javascript && npm run test:cli:python && npm run test:cli:php && npm run test:cli:go && npm run test:cli:c && npm run test:cli:cpp && npm run test:cli:csharp && npm run test:cli:css && npm run test:cli:bash && npm run test:cli:yaml && npm run test:cli:dockerfile"
   },
   "keywords": [
     "cli",
