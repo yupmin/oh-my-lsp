@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [java, kotlin, rust, ruby]
+        language: [java, kotlin, go, ruby]
 
     steps: &language_cli_tests_steps
       - name: Checkout
@@ -286,7 +286,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [typescript, javascript, python, php, go, lua]
+        language: [typescript, javascript, python, php, rust, lua]
     steps: *language_cli_tests_steps
 
   language-cli-tests-group-3:
