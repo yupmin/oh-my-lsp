@@ -87,5 +87,5 @@ export const BUILTIN_SERVERS: Record<string, Omit<LSPServerConfig, "id">> = {
   nixd: { command: ["nixd"], extensions: [".nix"] },
   tinymist: { command: ["tinymist"], extensions: [".typ", ".typc"] },
   "haskell-language-server": { command: ["haskell-language-server-wrapper", "--lsp"], extensions: [".hs", ".lhs"] },
-  "kotlin-ls": { command: ["kotlin-lsp"], extensions: [".kt", ".kts"] },
+  "kotlin-ls": { command: ["kotlin-lsp", "--stdio"], extensions: [".kt", ".kts"] },
 }
