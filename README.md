@@ -51,6 +51,28 @@ oh-my-lsp <command> <args...>
 | **find_references** | Find all usages across workspace |
 | **symbols** | Get file outline or workspace symbol search |
 
+### Language-specific LSP Command Coverage
+
+| Language | `symbols` | `diagnostics` | `goto_definition` | `find_references` | `prepare_rename` | `rename` |
+|---|---|---|---|---|---|---|
+| Bash | O | O | O | O | O | O |
+| C | O | O | O | O | O | O |
+| C++ | O | O | O | O | O | O |
+| C# | O | O | O | O | O | O |
+| CSS | O | O | X | X | X | X |
+| Dockerfile | O | O | X | X | X | X |
+| Go | O | O | O | O | O | O |
+| Java | O | O | O | O | O | O |
+| JavaScript | O | O | O | O | O | O |
+| Kotlin | O | O | O | X | X | O |
+| Lua | O | O | O | O | O | O |
+| PHP | O | O | O | O | O | O |
+| Python | O | O | O | O | O | O |
+| Ruby | O | O | O | O | O | O |
+| Rust | O | O | O | O | O | O |
+| TypeScript | O | O | O | O | O | O |
+| YAML | O | O | X | X | X | X |
+
 ### AST-Grep Tools
 
 | Tool | Description |
