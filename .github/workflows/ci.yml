@@ -50,7 +50,7 @@ jobs:
         run: npm ci
 
       - name: Setup Java
-        if: matrix.language == 'java'
+        if: matrix.language == 'java' || matrix.language == 'kotlin'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -162,13 +162,50 @@ jobs:
             sudo apt-get install -y rust-analyzer
           fi
 
-      - name: Install Lua language server (best effort)
+      - name: Install Kotlin language server
+        if: matrix.language == 'kotlin'
+        run: |
+          set -euo pipefail
+          if command -v kotlin-lsp >/dev/null 2>&1; then
+            exit 0
+          fi
+          KOTLIN_LSP_ZIP_URL="$(curl -fsSL https://github.com/Kotlin/kotlin-lsp/releases/latest | grep -o 'https://download-cdn.jetbrains.com/kotlin-lsp[^\" ]*linux-x64.zip' | head -n 1)"
+          if [ -z "$KOTLIN_LSP_ZIP_URL" ]; then
+            echo "Failed to resolve Kotlin LSP Linux artifact URL"
+            exit 1
+          fi
+          mkdir -p "$HOME/.local/kotlin-lsp" "$HOME/.local/bin"
+          curl -fsSL "$KOTLIN_LSP_ZIP_URL" -o /tmp/kotlin-lsp.zip
+          unzip -q -o /tmp/kotlin-lsp.zip -d "$HOME/.local/kotlin-lsp"
+          KOTLIN_LSP_SH="$(find "$HOME/.local/kotlin-lsp" -type f -name 'kotlin-lsp.sh' | head -n 1)"
+          if [ -z "$KOTLIN_LSP_SH" ]; then
+            echo "kotlin-lsp.sh not found after extraction"
+            exit 1
+          fi
+          chmod +x "$KOTLIN_LSP_SH"
+          ln -sf "$KOTLIN_LSP_SH" "$HOME/.local/bin/kotlin-lsp"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Install Lua language server
         if: matrix.language == 'lua'
         run: |
           set -euo pipefail
           if ! command -v lua-language-server >/dev/null 2>&1; then
             sudo apt-get update
-            sudo apt-get install -y lua-language-server || true
+            if ! sudo apt-get install -y lua-language-server; then
+              LUA_LS_TAG="$(curl -sI https://github.com/LuaLS/lua-language-server/releases/latest | tr -d '\r' | awk -F'/' '/^location:/{print $NF}' | tail -n 1)"
+              if [ -z "$LUA_LS_TAG" ]; then
+                echo "Failed to resolve LuaLS latest release tag"
+                exit 1
+              fi
+              LUA_LS_URL="https://github.com/LuaLS/lua-language-server/releases/download/${LUA_LS_TAG}/lua-language-server-${LUA_LS_TAG}-linux-x64.tar.gz"
+              mkdir -p "$HOME/.local/lua-language-server" "$HOME/.local/bin"
+              curl -fsSL "$LUA_LS_URL" -o /tmp/lua-language-server.tar.gz
+              tar -xzf /tmp/lua-language-server.tar.gz -C "$HOME/.local/lua-language-server"
+              chmod +x "$HOME/.local/lua-language-server/bin/lua-language-server"
+              ln -sf "$HOME/.local/lua-language-server/bin/lua-language-server" "$HOME/.local/bin/lua-language-server"
+              echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+            fi
           fi
 
       - name: Verify server installation (TypeScript)
@@ -230,6 +267,14 @@ jobs:
       - name: Verify server installation (Rust)
         if: matrix.language == 'rust'
         run: command -v rust-analyzer
+
+      - name: Verify server installation (Kotlin)
+        if: matrix.language == 'kotlin'
+        run: command -v kotlin-lsp
+
+      - name: Verify server installation (Lua)
+        if: matrix.language == 'lua'
+        run: command -v lua-language-server
 
       - name: Run CLI integration test
         run: npm run test:cli:${{ matrix.language }}

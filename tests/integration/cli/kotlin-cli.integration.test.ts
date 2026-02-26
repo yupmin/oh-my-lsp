@@ -7,7 +7,7 @@ import {
   createFixtureWorkspace,
   findNthOccurrencePosition,
   hasCommand,
-  runCli,
+  runCliAsync,
 } from "./cli-test-utils"
 
 const describeIfKotlinLs = hasCommand("kotlin-lsp") ? describe : describe.skip
@@ -36,10 +36,10 @@ function expectCliSuccess(result: { error?: Error; status: number | null; stdout
 }
 
 describeIfKotlinLs("CLI integration (Kotlin)", () => {
-  it("runs symbols", () => {
+  it("runs symbols", async () => {
     const { workspace, sampleFile } = createWorkspaceFiles()
 
-    const result = runCli([
+    const result = await runCliAsync([
       "symbols",
       sampleFile,
       "--scope",
@@ -54,10 +54,10 @@ describeIfKotlinLs("CLI integration (Kotlin)", () => {
     expect(result.stdout).toContain("Greeter")
   }, 240_000)
 
-  it("runs diagnostics", () => {
+  it("runs diagnostics", async () => {
     const { workspace, diagnosticsFailFile } = createWorkspaceFiles()
 
-    const result = runCli([
+    const result = await runCliAsync([
       "diagnostics",
       diagnosticsFailFile,
       "--base-path",
@@ -72,11 +72,11 @@ describeIfKotlinLs("CLI integration (Kotlin)", () => {
     expect(hasNoDiagnostics || hasDiagnosticLine).toBe(true)
   }, 240_000)
 
-  it("runs goto_definition", () => {
+  it("runs goto_definition", async () => {
     const { workspace, sampleFile } = createWorkspaceFiles()
     const callPos = findNthOccurrencePosition(sampleFile, "add(", 2)
 
-    const result = runCli([
+    const result = await runCliAsync([
       "goto_definition",
       sampleFile,
       "--line",
@@ -94,11 +94,35 @@ describeIfKotlinLs("CLI integration (Kotlin)", () => {
     expect(result.stdout).toMatch(/:2:\d+/)
   }, 240_000)
 
-  it("runs rename", () => {
+  it("runs find_references", async () => {
+    const { workspace, sampleFile } = createWorkspaceFiles()
+    const callPos = findNthOccurrencePosition(sampleFile, "add(", 2)
+
+    const result = await runCliAsync([
+      "find_references",
+      sampleFile,
+      "--line",
+      String(callPos.line),
+      "--character",
+      String(callPos.character),
+      "--base-path",
+      workspace,
+      "--timeout",
+      "120000",
+    ], 240_000)
+
+    expectCliSuccess(result)
+    const referenceLines = result.stdout
+      .split("\n")
+      .filter((line) => line.includes(sampleFile))
+    expect(referenceLines.length).toBeGreaterThanOrEqual(2)
+  }, 240_000)
+
+  it("runs rename", async () => {
     const { workspace, sampleFile } = createWorkspaceFiles()
     const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
 
-    const result = runCli([
+    const result = await runCliAsync([
       "rename",
       sampleFile,
       "sum",

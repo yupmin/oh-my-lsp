@@ -1,4 +1,4 @@
-import { spawnSync, type SpawnSyncReturns } from "node:child_process"
+import { spawn, spawnSync, type SpawnSyncReturns } from "node:child_process"
 import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -16,6 +16,73 @@ export function runCli(args: string[], timeoutMs = 180_000): SpawnSyncReturns<st
     cwd: process.cwd(),
     encoding: "utf8",
     timeout: timeoutMs,
+  })
+}
+
+export interface CliAsyncResult {
+  error?: Error
+  status: number | null
+  stdout: string
+  stderr: string
+}
+
+export function runCliAsync(args: string[], timeoutMs = 180_000): Promise<CliAsyncResult> {
+  const cliPath = join(process.cwd(), "dist", "index.js")
+
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [cliPath, ...args], {
+      cwd: process.cwd(),
+      stdio: ["ignore", "pipe", "pipe"],
+    })
+
+    let stdout = ""
+    let stderr = ""
+    let settled = false
+
+    const finish = (result: CliAsyncResult): void => {
+      if (settled) return
+      settled = true
+      clearTimeout(timeout)
+      resolve(result)
+    }
+
+    const timeout = setTimeout(() => {
+      child.kill("SIGKILL")
+      finish({
+        error: new Error(`CLI process timed out after ${timeoutMs}ms`),
+        status: null,
+        stdout,
+        stderr,
+      })
+    }, timeoutMs)
+
+    child.stdout?.setEncoding("utf8")
+    child.stderr?.setEncoding("utf8")
+
+    child.stdout?.on("data", (chunk: string) => {
+      stdout += chunk
+    })
+
+    child.stderr?.on("data", (chunk: string) => {
+      stderr += chunk
+    })
+
+    child.on("error", (error) => {
+      finish({
+        error,
+        status: null,
+        stdout,
+        stderr,
+      })
+    })
+
+    child.on("close", (code) => {
+      finish({
+        status: code,
+        stdout,
+        stderr,
+      })
+    })
   })
 }
 

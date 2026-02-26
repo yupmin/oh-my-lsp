@@ -20,6 +20,7 @@ const fullFeatureLanguages = [
   { name: "cpp", filePath: "/tmp/sample.cpp" },
   { name: "csharp", filePath: "/tmp/sample.cs" },
   { name: "css", filePath: "/tmp/sample.css" },
+  { name: "kotlin", filePath: "/tmp/sample.kt" },
   { name: "lua", filePath: "/tmp/sample.lua" },
 ] as const
 
