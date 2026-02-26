@@ -25,10 +25,11 @@ function createWorkspaceFiles(): { workspace: string; sampleFile: string; diagno
   }
 }
 
-function expectNotConfigured(result: { error?: Error; status: number | null; stdout: string }): void {
+function expectNotConfigured(result: { error?: Error; status: number | null; stdout: string; stderr: string }): void {
+  const output = `${result.stdout}\n${result.stderr}`
   expect(result.error).toBeUndefined()
   expect(result.status).toBe(1)
-  expect(result.stdout).toContain("No LSP server configured for extension: .scala")
+  expect(output).toContain("No LSP server configured for extension: .scala")
 }
 
 describe("CLI integration (Scala)", () => {
