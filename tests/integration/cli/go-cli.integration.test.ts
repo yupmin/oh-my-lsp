@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs"
+import { readFileSync, rmSync } from "node:fs"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 
@@ -29,6 +29,20 @@ function createWorkspaceFiles(): { workspace: string; sampleFile: string; diagno
   }
 }
 
+function createSampleWorkspaceFiles(): { workspace: string; sampleFile: string } {
+  const { workspace, sampleFile, diagnosticsFailFile } = createWorkspaceFiles()
+  // Keep navigation/rename scenarios isolated to a single valid file.
+  rmSync(diagnosticsFailFile, { force: true })
+  return { workspace, sampleFile }
+}
+
+function createDiagnosticsWorkspaceFiles(): { workspace: string; diagnosticsFailFile: string } {
+  const { workspace, sampleFile, diagnosticsFailFile } = createWorkspaceFiles()
+  // Keep diagnostics scenarios isolated to avoid duplicate symbol interference.
+  rmSync(sampleFile, { force: true })
+  return { workspace, diagnosticsFailFile }
+}
+
 function expectCliSuccess(result: { error?: Error; status: number | null; stdout: string }): void {
   expect(result.error).toBeUndefined()
   expect(result.status).toBe(0)
@@ -37,7 +51,7 @@ function expectCliSuccess(result: { error?: Error; status: number | null; stdout
 
 describeIfGoServer("CLI integration (Go)", () => {
   it("runs symbols", () => {
-    const { workspace, sampleFile } = createWorkspaceFiles()
+    const { workspace, sampleFile } = createSampleWorkspaceFiles()
     const result = runCli(["symbols", sampleFile, "--scope", "document", "--base-path", workspace, "--timeout", "60000"])
 
     expectCliSuccess(result)
@@ -45,7 +59,7 @@ describeIfGoServer("CLI integration (Go)", () => {
   }, 120_000)
 
   it("runs diagnostics", () => {
-    const { workspace, diagnosticsFailFile } = createWorkspaceFiles()
+    const { workspace, diagnosticsFailFile } = createDiagnosticsWorkspaceFiles()
     const result = runCli(["diagnostics", diagnosticsFailFile, "--base-path", workspace, "--timeout", "60000"])
 
     expectCliSuccess(result)
@@ -54,7 +68,7 @@ describeIfGoServer("CLI integration (Go)", () => {
   }, 120_000)
 
   it("runs goto_definition", () => {
-    const { workspace, sampleFile } = createWorkspaceFiles()
+    const { workspace, sampleFile } = createSampleWorkspaceFiles()
     const callPos = findNthOccurrencePosition(sampleFile, "add(", 2)
 
     const result = runCli([
@@ -75,7 +89,7 @@ describeIfGoServer("CLI integration (Go)", () => {
   }, 120_000)
 
   it("runs find_references", () => {
-    const { workspace, sampleFile } = createWorkspaceFiles()
+    const { workspace, sampleFile } = createSampleWorkspaceFiles()
     const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
 
     const result = runCli([
@@ -99,7 +113,7 @@ describeIfGoServer("CLI integration (Go)", () => {
   }, 120_000)
 
   it("runs prepare_rename", () => {
-    const { workspace, sampleFile } = createWorkspaceFiles()
+    const { workspace, sampleFile } = createSampleWorkspaceFiles()
     const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
 
     const result = runCli([
@@ -120,7 +134,7 @@ describeIfGoServer("CLI integration (Go)", () => {
   }, 120_000)
 
   it("runs rename", () => {
-    const { workspace, sampleFile } = createWorkspaceFiles()
+    const { workspace, sampleFile } = createSampleWorkspaceFiles()
     const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
 
     const result = runCli([
