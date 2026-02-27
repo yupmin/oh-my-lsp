@@ -146,9 +146,12 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y ruby-full
           fi
+          GEM_USER_DIR="$(ruby -r rubygems -e 'puts Gem.user_dir')"
           gem install --user-install ruby-lsp
-          GEM_BIN_DIR="$(ruby -r rubygems -e 'puts Gem.user_dir')/bin"
+          GEM_BIN_DIR="$GEM_USER_DIR/bin"
           echo "$GEM_BIN_DIR" >> "$GITHUB_PATH"
+          # Set GEM_HOME so bundler (used by ruby-lsp during startup) can find user-installed gems
+          echo "GEM_HOME=$GEM_USER_DIR" >> "$GITHUB_ENV"
 
       - name: Install Rust language server
         if: matrix.language == 'rust'
