@@ -1,11 +1,9 @@
-import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 
 import {
   cleanupWorkspace,
   createFixtureWorkspace,
-  findNthOccurrencePosition,
   hasCommand,
   runCli,
 } from "./cli-test-utils"
@@ -35,25 +33,12 @@ function expectCliSuccess(result: { error?: Error; status: number | null; stdout
   expect(result.stdout).not.toContain("Error:")
 }
 
-function expectCliSuccessOrKnownFailure(result: { error?: Error; status: number | null; stdout: string }): void {
-  expect(result.error).toBeUndefined()
-  expect([0, 1]).toContain(result.status)
-
-  if (result.status === 1) {
-    expect(result.stdout).toContain("Error:")
-    return
-  }
-
-  expect(result.stdout).not.toContain("Error:")
-}
-
 describeIfRubyServer("CLI integration (Ruby)", () => {
   it("runs symbols", () => {
     const { workspace, sampleFile } = createWorkspaceFiles()
     const result = runCli(["symbols", sampleFile, "--scope", "document", "--base-path", workspace, "--timeout", "60000"])
 
-    expectCliSuccessOrKnownFailure(result)
-    if (result.status === 1) return
+    expectCliSuccess(result)
     expect(result.stdout.length).toBeGreaterThan(0)
   }, 120_000)
 
@@ -62,103 +47,19 @@ describeIfRubyServer("CLI integration (Ruby)", () => {
     const result = runCli(["diagnostics", diagnosticsFailFile, "--base-path", workspace, "--timeout", "60000"])
 
     expectCliSuccess(result)
-    const hasNoDiagnostics = result.stdout.includes("No diagnostics found")
-    const hasDiagnosticLine = / at \d+:\d+:/.test(result.stdout)
-    expect(hasNoDiagnostics || hasDiagnosticLine).toBe(true)
+    expect(result.stdout).not.toContain("No diagnostics found")
+    expect(result.stdout).toMatch(/ at \d+:\d+:/)
   }, 120_000)
 
-  it("runs goto_definition", () => {
-    const { workspace, sampleFile } = createWorkspaceFiles()
-    const callPos = findNthOccurrencePosition(sampleFile, "add(", 2)
+  // rubocop-lsp does not support textDocument/definition
+  it.skip("runs goto_definition", () => {})
 
-    const result = runCli([
-      "goto_definition",
-      sampleFile,
-      "--line",
-      String(callPos.line),
-      "--character",
-      String(callPos.character),
-      "--base-path",
-      workspace,
-      "--timeout",
-      "60000",
-    ])
+  // rubocop-lsp does not support textDocument/references
+  it.skip("runs find_references", () => {})
 
-    expectCliSuccessOrKnownFailure(result)
-    if (result.status === 1) return
-    expect(result.stdout.length).toBeGreaterThan(0)
-  }, 120_000)
+  // rubocop-lsp does not support textDocument/prepareRename
+  it.skip("runs prepare_rename", () => {})
 
-  it("runs find_references", () => {
-    const { workspace, sampleFile } = createWorkspaceFiles()
-    const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
-
-    const result = runCli([
-      "find_references",
-      sampleFile,
-      "--line",
-      String(definitionPos.line),
-      "--character",
-      String(definitionPos.character),
-      "--base-path",
-      workspace,
-      "--timeout",
-      "60000",
-    ])
-
-    expectCliSuccessOrKnownFailure(result)
-  }, 120_000)
-
-  it("runs prepare_rename", () => {
-    const { workspace, sampleFile } = createWorkspaceFiles()
-    const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
-
-    const result = runCli([
-      "prepare_rename",
-      sampleFile,
-      "--line",
-      String(definitionPos.line),
-      "--character",
-      String(definitionPos.character),
-      "--base-path",
-      workspace,
-      "--timeout",
-      "60000",
-    ])
-
-    expectCliSuccessOrKnownFailure(result)
-    if (result.status === 1) return
-    expect(result.stdout.length).toBeGreaterThan(0)
-  }, 120_000)
-
-  it("runs rename", () => {
-    const { workspace, sampleFile } = createWorkspaceFiles()
-    const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
-
-    const result = runCli([
-      "rename",
-      sampleFile,
-      "sum",
-      "--line",
-      String(definitionPos.line),
-      "--character",
-      String(definitionPos.character),
-      "--base-path",
-      workspace,
-      "--timeout",
-      "60000",
-    ])
-
-    expectCliSuccessOrKnownFailure(result)
-    if (result.status === 1) return
-
-    const applied = result.stdout.includes("Applied")
-    const failedToApply = result.stdout.includes("Failed to apply some changes")
-    expect(applied || failedToApply).toBe(true)
-
-    if (applied) {
-      const updated = readFileSync(sampleFile, "utf8")
-      expect(updated).toContain("sum")
-    }
-  }, 120_000)
+  // rubocop-lsp does not support workspace rename
+  it.skip("runs rename", () => {})
 })
