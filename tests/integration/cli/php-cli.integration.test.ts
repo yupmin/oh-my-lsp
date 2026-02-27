@@ -41,7 +41,7 @@ describeIfPhpServer("CLI integration (PHP)", () => {
     const result = runCli(["symbols", sampleFile, "--scope", "document", "--base-path", workspace, "--timeout", "60000"])
 
     expectCliSuccess(result)
-    expect(result.stdout.length).toBeGreaterThan(0)
+    expect(result.stdout).toContain("add")
   }, 120_000)
 
   it("runs diagnostics", () => {
@@ -49,9 +49,8 @@ describeIfPhpServer("CLI integration (PHP)", () => {
     const result = runCli(["diagnostics", diagnosticsFailFile, "--base-path", workspace, "--timeout", "60000"])
 
     expectCliSuccess(result)
-    const hasNoDiagnostics = result.stdout.includes("No diagnostics found")
-    const hasDiagnosticLine = / at \d+:\d+:/.test(result.stdout)
-    expect(hasNoDiagnostics || hasDiagnosticLine).toBe(true)
+    expect(result.stdout).not.toContain("No diagnostics found")
+    expect(result.stdout).toMatch(/ at \d+:\d+:/)
   }, 120_000)
 
   it("runs goto_definition", () => {
@@ -72,7 +71,7 @@ describeIfPhpServer("CLI integration (PHP)", () => {
     ])
 
     expectCliSuccess(result)
-    expect(result.stdout.length).toBeGreaterThan(0)
+    expect(result.stdout).toContain(sampleFile)
   }, 120_000)
 
   it("runs find_references", () => {
@@ -93,63 +92,15 @@ describeIfPhpServer("CLI integration (PHP)", () => {
     ])
 
     expectCliSuccess(result)
+    const referenceLines = result.stdout
+      .split("\n")
+      .filter((line) => line.trim().startsWith(sampleFile))
+    expect(referenceLines.length).toBeGreaterThanOrEqual(2)
   }, 120_000)
 
-  it("runs prepare_rename", () => {
-    const { workspace, sampleFile } = createWorkspaceFiles()
-    const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
+  // intelephense does not support rename for plain PHP functions
+  it.skip("runs prepare_rename", () => {})
 
-    const result = runCli([
-      "prepare_rename",
-      sampleFile,
-      "--line",
-      String(definitionPos.line),
-      "--character",
-      String(definitionPos.character),
-      "--base-path",
-      workspace,
-      "--timeout",
-      "60000",
-    ])
-
-    expectCliSuccess(result)
-    expect(result.stdout.length).toBeGreaterThan(0)
-  }, 120_000)
-
-  it("runs rename", () => {
-    const { workspace, sampleFile } = createWorkspaceFiles()
-    const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
-
-    const result = runCli([
-      "rename",
-      sampleFile,
-      "sum",
-      "--line",
-      String(definitionPos.line),
-      "--character",
-      String(definitionPos.character),
-      "--base-path",
-      workspace,
-      "--timeout",
-      "60000",
-    ])
-
-    expect(result.error).toBeUndefined()
-    expect([0, 1]).toContain(result.status)
-
-    if (result.status === 1) {
-      // intelephense may refuse edit application depending on workspace state
-      expect(result.stdout).toContain("No edit provided")
-      return
-    }
-
-    const applied = result.stdout.includes("Applied")
-    const failedToApply = result.stdout.includes("Failed to apply some changes")
-    expect(applied || failedToApply).toBe(true)
-
-    if (applied) {
-      const updated = readFileSync(sampleFile, "utf8")
-      expect(updated).toContain("sum")
-    }
-  }, 120_000)
+  // intelephense does not support rename for plain PHP functions
+  it.skip("runs rename", () => {})
 })
