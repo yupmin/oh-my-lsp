@@ -72,8 +72,7 @@ function findLatestLombokJarInMaven(): string | null {
   try {
     const versions = readdirSync(lombokDir)
       .filter((v) => /^\d+\.\d+/.test(v))
-      .sort()
-      .reverse()
+      .sort(compareVersionsDesc)
     for (const version of versions) {
       const jar = findLombokJarInMaven(version)
       if (jar) return jar
@@ -125,8 +124,7 @@ function findLatestLombokJarInGradle(): string | null {
   try {
     const versions = readdirSync(lombokDir)
       .filter((v) => /^\d+\.\d+/.test(v))
-      .sort()
-      .reverse()
+      .sort(compareVersionsDesc)
     for (const version of versions) {
       const jar = findLombokJarInGradle(version)
       if (jar) return jar
@@ -136,4 +134,15 @@ function findLatestLombokJarInGradle(): string | null {
   }
 
   return null
+}
+
+/** Sorts version strings in descending numeric order (e.g. 1.18.30 > 1.18.9). */
+function compareVersionsDesc(a: string, b: string): number {
+  const pa = a.split(".").map(Number)
+  const pb = b.split(".").map(Number)
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const diff = (pb[i] ?? 0) - (pa[i] ?? 0)
+    if (diff !== 0) return diff
+  }
+  return 0
 }

@@ -177,6 +177,14 @@ describe("detectLombokJar — Maven cache", () => {
     expect(detectLombokJar()).toBe(latest)
   })
 
+  it("picks 1.18.30 over 1.18.9 (numeric sort, not lexicographic)", () => {
+    // Regression: lexicographic sort puts "1.18.9" > "1.18.30" because '9' > '3'.
+    createMavenJar("1.18.9")
+    const latest = createMavenJar("1.18.30")
+
+    expect(detectLombokJar()).toBe(latest)
+  })
+
   it("returns null when Maven cache is empty", () => {
     expect(detectLombokJar()).toBeNull()
   })
@@ -215,6 +223,13 @@ describe("detectLombokJar — Gradle cache", () => {
   it("picks the latest version from Gradle when multiple exist", () => {
     createGradleJar("1.18.20")
     createGradleJar("1.18.28")
+    const latest = createGradleJar("1.18.30")
+
+    expect(detectLombokJar()).toBe(latest)
+  })
+
+  it("picks 1.18.30 over 1.18.9 in Gradle cache (numeric sort, not lexicographic)", () => {
+    createGradleJar("1.18.9")
     const latest = createGradleJar("1.18.30")
 
     expect(detectLombokJar()).toBe(latest)
