@@ -53,25 +53,25 @@ oh-my-lsp <command> <args...>
 
 ### Language-specific LSP Command Coverage
 
-| Language | `symbols` | `diagnostics` | `goto_definition` | `find_references` | `prepare_rename` | `rename` |
-|---|---|---|---|---|---|---|
-| Bash | O | O | O | O | O | O |
-| C | O | O | O | O | O | O |
-| C++ | O | O | O | O | O | O |
-| C# | O | O | O | O | O | O |
-| CSS | X | O | X | X | X | X |
-| Dockerfile | O | O | X | X | X | X |
-| Go | O | O | O | O | O | O |
-| Java | O | O | O | O | O | O |
-| JavaScript | O | O | O | O | O | O |
-| Kotlin | O | O | O | O | X | O |
-| Lua | O | O | O | O | O | O |
-| PHP | O | O | O | O | X | X |
-| Python | O | O | O | O | O | O |
-| Ruby | O | O | X | X | X | X |
-| Rust | O | O | O | O | O | O |
-| TypeScript | O | O | O | O | O | O |
-| YAML | O | O | X | X | X | X |
+| Language | `symbols` | `diagnostics` | `goto_definition` | `find_references` | `prepare_rename` | `rename` | verify |
+|---|---|---|---|---|---|---|---|
+| Bash | O | O | O | O | O | O | ✅ |
+| C | O | O | O | O | O | O | ✅ |
+| C++ | O | O | O | O | O | O | ✅ |
+| C# | O | O | O | O | O | O | |
+| CSS | X | O | X | X | X | X | ✅ |
+| Dockerfile | O | O | X | X | X | X | ✅ |
+| Go | O | O | O | O | O | O | |
+| Java | O | O | O | O | O | O | ✅ |
+| JavaScript | O | O | O | O | O | O | ✅ |
+| Kotlin | O | O | O | O | X | O | ✅ |
+| Lua | O | O | O | O | O | O | |
+| PHP | O | O | O | O | X | X | ✅ |
+| Python | O | O | O | O | O | O | ✅ |
+| Ruby | O | O | X | X | X | X | |
+| Rust | O | O | O | O | O | O | |
+| TypeScript | O | O | O | O | O | O | ✅ |
+| YAML | O | O | X | X | X | X | ✅ |
 
 > Bash note: `goto_definition`, `find_references`, `prepare_rename`, and `rename` are supported only within the same file.
 >
