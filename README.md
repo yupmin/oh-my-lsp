@@ -59,21 +59,27 @@ oh-my-lsp <command> <args...>
 | C | O | O | O | O | O | O |
 | C++ | O | O | O | O | O | O |
 | C# | O | O | O | O | O | O |
-| CSS | O | O | X | X | X | X |
+| CSS | X | O | X | X | X | X |
 | Dockerfile | O | O | X | X | X | X |
 | Go | O | O | O | O | O | O |
 | Java | O | O | O | O | O | O |
 | JavaScript | O | O | O | O | O | O |
 | Kotlin | O | O | O | O | X | O |
 | Lua | O | O | O | O | O | O |
-| PHP | O | O | O | O | O | O |
+| PHP | O | O | O | O | X | X |
 | Python | O | O | O | O | O | O |
-| Ruby | O | O | O | O | O | O |
+| Ruby | O | O | X | X | X | X |
 | Rust | O | O | O | O | O | O |
 | TypeScript | O | O | O | O | O | O |
 | YAML | O | O | X | X | X | X |
 
 > Bash note: `goto_definition`, `find_references`, `prepare_rename`, and `rename` are supported only within the same file.
+>
+> CSS note: `symbols` is not supported — biome does not implement `textDocument/documentSymbol` for CSS files.
+>
+> PHP note: `prepare_rename` and `rename` are not supported — intelephense does not support rename for plain PHP functions.
+>
+> Ruby note: `goto_definition`, `find_references`, `prepare_rename`, and `rename` are not supported — rubocop-lsp is linter-based and does not implement navigation or rename operations.
 
 ### AST-Grep Tools
 
