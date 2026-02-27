@@ -34,9 +34,6 @@ function expectCliSuccess(result: { error?: Error; status: number | null; stdout
 }
 
 describeIfCssServer("CLI integration (CSS)", () => {
-  // biome does not support textDocument/documentSymbol for CSS files
-  it.skip("runs symbols", () => {})
-
   it("runs diagnostics", () => {
     const { workspace, diagnosticsFailFile } = createWorkspaceFiles()
     const result = runCli(["diagnostics", diagnosticsFailFile, "--base-path", workspace, "--timeout", "60000"])
