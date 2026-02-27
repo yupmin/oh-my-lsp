@@ -13,6 +13,7 @@ interface LspEntry {
   priority?: number
   env?: Record<string, string>
   initialization?: Record<string, unknown>
+  jvmArgs?: string[]
 }
 
 interface ConfigJson {
@@ -88,6 +89,7 @@ export function getMergedServers(): ServerWithSource[] {
         priority: entry.priority ?? 0,
         env: entry.env,
         initialization: entry.initialization,
+        jvmArgs: entry.jvmArgs,
         source,
       })
       seen.add(id)
