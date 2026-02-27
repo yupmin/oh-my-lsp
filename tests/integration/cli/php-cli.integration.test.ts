@@ -97,4 +97,10 @@ describeIfPhpServer("CLI integration (PHP)", () => {
       .filter((line) => line.trim().startsWith(sampleFile))
     expect(referenceLines.length).toBeGreaterThanOrEqual(2)
   }, 120_000)
+
+  // intelephense does not support rename for plain PHP functions
+  it.skip("runs prepare_rename", () => {})
+
+  // intelephense does not support rename for plain PHP functions
+  it.skip("runs rename", () => {})
 })

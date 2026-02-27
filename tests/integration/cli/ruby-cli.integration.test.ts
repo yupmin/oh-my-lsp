@@ -52,6 +52,9 @@ describeIfRubyServer("CLI integration (Ruby)", () => {
     expect(result.stdout).toMatch(/ at \d+:\d+:/)
   }, 120_000)
 
+  // ruby-lsp requires a full Ruby project (Gemfile) to index symbols for goto_definition
+  it.skip("runs goto_definition", () => {})
+
   it("runs find_references", () => {
     const { workspace, sampleFile } = createWorkspaceFiles()
     const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
@@ -75,4 +78,10 @@ describeIfRubyServer("CLI integration (Ruby)", () => {
       .filter((line) => line.trim().startsWith(sampleFile))
     expect(referenceLines.length).toBeGreaterThanOrEqual(2)
   }, 120_000)
+
+  // ruby-lsp does not support prepare_rename for method definitions in standalone files
+  it.skip("runs prepare_rename", () => {})
+
+  // ruby-lsp does not support rename for method definitions in standalone files
+  it.skip("runs rename", () => {})
 })
