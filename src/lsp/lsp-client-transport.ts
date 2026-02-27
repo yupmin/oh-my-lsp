@@ -5,6 +5,7 @@ import { join } from "node:path"
 import type { Diagnostic, ResolvedServer } from "./types"
 import { spawnProcess, type UnifiedProcess } from "./lsp-process"
 import { log } from "../shared/logger"
+import { detectLombokJar } from "./lombok-detector"
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 15000
 const JAVA_REQUEST_TIMEOUT_MS = 60000
@@ -73,10 +74,6 @@ export class LSPClientTransport {
     const hasData = command.includes("-data")
     const hasConfiguration = command.includes("-configuration")
 
-    if (hasData && hasConfiguration) {
-      return command
-    }
-
     const workspaceHash = createHash("sha1").update(this.root).digest("hex")
     const customBaseDir = process.env.OH_MY_LSP_JDTLS_BASE?.trim()
     const candidateBaseDirs = customBaseDir
@@ -114,6 +111,24 @@ export class LSPClientTransport {
     }
     if (!hasData) {
       resolved.push("-data", dataDir)
+    }
+
+    // Apply JVM args from config (e.g. -javaagent:/path/to/lombok.jar)
+    const jvmArgs = this.server.jvmArgs ?? []
+    for (const arg of jvmArgs) {
+      resolved.push(`--jvm-arg=${arg}`)
+    }
+
+    // Auto-detect lombok unless already provided via config or command
+    const hasLombokAgent =
+      jvmArgs.some((a) => a.includes("lombok")) ||
+      resolved.some((a) => a.includes("lombok"))
+    if (!hasLombokAgent) {
+      const lombokJar = detectLombokJar(this.root)
+      if (lombokJar) {
+        resolved.push(`--jvm-arg=-javaagent:${lombokJar}`)
+        log("[LSP] Auto-detected lombok agent", { lombokJar })
+      }
     }
 
     log("[LSP] Using explicit jdtls paths", {

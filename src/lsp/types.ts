@@ -121,4 +121,5 @@ export interface ResolvedServer {
   priority: number
   env?: Record<string, string>
   initialization?: Record<string, unknown>
+  jvmArgs?: string[]
 }
