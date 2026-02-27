@@ -68,7 +68,7 @@ oh-my-lsp <command> <args...>
 | Lua | O | O | O | O | O | O | |
 | PHP | O | O | O | O | X | X | ✅ |
 | Python | O | O | O | O | O | O | ✅ |
-| Ruby | O | O | X | X | X | X | ✅ |
+| Ruby | O | O | X | O | X | X | ✅ |
 | Rust | O | O | O | O | O | O | |
 | TypeScript | O | O | O | O | O | O | ✅ |
 | YAML | O | O | X | X | X | X | ✅ |
@@ -79,7 +79,7 @@ oh-my-lsp <command> <args...>
 >
 > PHP note: `prepare_rename` and `rename` are not supported — intelephense does not support rename for plain PHP functions.
 >
-> Ruby note: `goto_definition`, `prepare_rename`, and `rename` are not supported — ruby-lsp requires a full Ruby project (Gemfile) to index symbols for navigation, and does not support rename for method definitions in standalone files.
+> Ruby note: `goto_definition`, `prepare_rename`, and `rename` are not supported — ruby-lsp requires a full Ruby project (Gemfile) to index symbols for definition navigation, and does not support rename for method definitions in standalone files.
 
 ### AST-Grep Tools
 
