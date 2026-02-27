@@ -4,11 +4,12 @@ import { afterEach, describe, expect, it } from "vitest"
 import {
   cleanupWorkspace,
   createFixtureWorkspace,
+  findNthOccurrencePosition,
   hasCommand,
   runCli,
 } from "./cli-test-utils"
 
-const describeIfRubyServer = hasCommand("rubocop") ? describe : describe.skip
+const describeIfRubyServer = hasCommand("ruby-lsp") ? describe : describe.skip
 const workspaces: string[] = []
 
 afterEach(() => {
@@ -51,15 +52,36 @@ describeIfRubyServer("CLI integration (Ruby)", () => {
     expect(result.stdout).toMatch(/ at \d+:\d+:/)
   }, 120_000)
 
-  // rubocop-lsp does not support textDocument/definition
+  // ruby-lsp requires a full Ruby project (Gemfile) to index symbols for goto_definition
   it.skip("runs goto_definition", () => {})
 
-  // rubocop-lsp does not support textDocument/references
-  it.skip("runs find_references", () => {})
+  it("runs find_references", () => {
+    const { workspace, sampleFile } = createWorkspaceFiles()
+    const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
 
-  // rubocop-lsp does not support textDocument/prepareRename
+    const result = runCli([
+      "find_references",
+      sampleFile,
+      "--line",
+      String(definitionPos.line),
+      "--character",
+      String(definitionPos.character),
+      "--base-path",
+      workspace,
+      "--timeout",
+      "60000",
+    ])
+
+    expectCliSuccess(result)
+    const referenceLines = result.stdout
+      .split("\n")
+      .filter((line) => line.trim().startsWith(sampleFile))
+    expect(referenceLines.length).toBeGreaterThanOrEqual(2)
+  }, 120_000)
+
+  // ruby-lsp does not support prepare_rename for method definitions in standalone files
   it.skip("runs prepare_rename", () => {})
 
-  // rubocop-lsp does not support workspace rename
+  // ruby-lsp does not support rename for method definitions in standalone files
   it.skip("runs rename", () => {})
 })

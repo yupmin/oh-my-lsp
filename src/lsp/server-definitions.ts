@@ -53,7 +53,7 @@ export const BUILTIN_SERVERS: Record<string, Omit<LSPServerConfig, "id">> = {
   oxlint: { command: ["oxlint", "--lsp"], extensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts", ".vue", ".astro", ".svelte"] },
   biome: { command: ["biome", "lsp-proxy", "--stdio"], extensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts", ".json", ".jsonc", ".vue", ".astro", ".svelte", ".css", ".graphql", ".gql", ".html"] },
   gopls: { command: ["gopls"], extensions: [".go"] },
-  "ruby-lsp": { command: ["rubocop", "--lsp"], extensions: [".rb", ".rake", ".gemspec", ".ru"] },
+  "ruby-lsp": { command: ["ruby-lsp"], extensions: [".rb", ".rake", ".gemspec", ".ru"] },
   basedpyright: { command: ["basedpyright-langserver", "--stdio"], extensions: [".py", ".pyi"] },
   pyright: { command: ["pyright-langserver", "--stdio"], extensions: [".py", ".pyi"] },
   ty: { command: ["ty", "server"], extensions: [".py", ".pyi"] },
