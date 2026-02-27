@@ -41,7 +41,7 @@ describeIfPythonServer("CLI integration (Python)", () => {
     const result = runCli(["symbols", sampleFile, "--scope", "document", "--base-path", workspace, "--timeout", "60000"])
 
     expectCliSuccess(result)
-    expect(result.stdout.length).toBeGreaterThan(0)
+    expect(result.stdout).toContain("add")
   }, 120_000)
 
   it("runs diagnostics", () => {
@@ -49,9 +49,8 @@ describeIfPythonServer("CLI integration (Python)", () => {
     const result = runCli(["diagnostics", diagnosticsFailFile, "--base-path", workspace, "--timeout", "60000"])
 
     expectCliSuccess(result)
-    const hasNoDiagnostics = result.stdout.includes("No diagnostics found")
-    const hasDiagnosticLine = / at \d+:\d+:/.test(result.stdout)
-    expect(hasNoDiagnostics || hasDiagnosticLine).toBe(true)
+    expect(result.stdout).not.toContain("No diagnostics found")
+    expect(result.stdout).toMatch(/ at \d+:\d+:/)
   }, 120_000)
 
   it("runs goto_definition", () => {
@@ -72,7 +71,8 @@ describeIfPythonServer("CLI integration (Python)", () => {
     ])
 
     expectCliSuccess(result)
-    expect(result.stdout.length).toBeGreaterThan(0)
+    expect(result.stdout).toContain(sampleFile)
+    expect(result.stdout).toMatch(/:1:\d+/)
   }, 120_000)
 
   it("runs find_references", () => {
@@ -93,6 +93,10 @@ describeIfPythonServer("CLI integration (Python)", () => {
     ])
 
     expectCliSuccess(result)
+    const referenceLines = result.stdout
+      .split("\n")
+      .filter((line) => line.trim().startsWith(sampleFile))
+    expect(referenceLines.length).toBeGreaterThanOrEqual(2)
   }, 120_000)
 
   it("runs prepare_rename", () => {
@@ -113,7 +117,7 @@ describeIfPythonServer("CLI integration (Python)", () => {
     ])
 
     expectCliSuccess(result)
-    expect(result.stdout.length).toBeGreaterThan(0)
+    expect(result.stdout).toContain("Rename")
   }, 120_000)
 
   it("runs rename", () => {
@@ -135,14 +139,10 @@ describeIfPythonServer("CLI integration (Python)", () => {
     ])
 
     expectCliSuccess(result)
+    expect(result.stdout).toContain("Applied")
 
-    const applied = result.stdout.includes("Applied")
-    const failedToApply = result.stdout.includes("Failed to apply some changes")
-    expect(applied || failedToApply).toBe(true)
-
-    if (applied) {
-      const updated = readFileSync(sampleFile, "utf8")
-      expect(updated).toContain("sum")
-    }
+    const updated = readFileSync(sampleFile, "utf8")
+    expect(updated).toContain("def sum")
+    expect(updated).toContain("sum(1, 2)")
   }, 120_000)
 })

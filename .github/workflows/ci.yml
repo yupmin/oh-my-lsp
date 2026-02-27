@@ -146,8 +146,8 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y ruby-full
           fi
-          gem install --user-install rubocop
-          GEM_BIN_DIR="$(ruby -r rubygems -e 'puts Gem.user_dir')/bin"
+          sudo gem install bundler ruby-lsp
+          GEM_BIN_DIR="$(ruby -r rubygems -e 'puts Gem.default_bindir')"
           echo "$GEM_BIN_DIR" >> "$GITHUB_PATH"
 
       - name: Install Rust language server
@@ -262,7 +262,19 @@ jobs:
 
       - name: Verify server installation (Ruby)
         if: matrix.language == 'ruby'
-        run: command -v rubocop
+        run: command -v ruby-lsp
+
+      - name: Preflight ruby-lsp startup (debug)
+        if: matrix.language == 'ruby'
+        run: |
+          mkdir -p /tmp/ruby-lsp-debug
+          cd /tmp/ruby-lsp-debug
+          ruby-lsp 2>&1 &
+          RUBY_PID=$!
+          sleep 10
+          kill "$RUBY_PID" 2>/dev/null || true
+          wait "$RUBY_PID" 2>/dev/null || true
+          echo "Preflight done (exit ignored)"
 
       - name: Verify server installation (Rust)
         if: matrix.language == 'rust'
