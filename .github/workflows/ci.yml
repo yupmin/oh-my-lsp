@@ -146,7 +146,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y ruby-full
           fi
-          gem install --user-install rubocop
+          gem install --user-install ruby-lsp
           GEM_BIN_DIR="$(ruby -r rubygems -e 'puts Gem.user_dir')/bin"
           echo "$GEM_BIN_DIR" >> "$GITHUB_PATH"
 
@@ -262,7 +262,7 @@ jobs:
 
       - name: Verify server installation (Ruby)
         if: matrix.language == 'ruby'
-        run: command -v rubocop
+        run: command -v ruby-lsp
 
       - name: Verify server installation (Rust)
         if: matrix.language == 'rust'
