@@ -33,12 +33,12 @@ export function detectLombokVersionFromBuildFile(projectRoot: string): string | 
   if (existsSync(pomPath)) {
     try {
       const content = readFileSync(pomPath, "utf-8")
-      // <artifactId>lombok</artifactId> followed by <version>
+      // Match <artifactId>lombok</artifactId> then <version> within the same block.
+      // Only the afterArtifact direction is supported: version-before-artifactId is not
+      // standard Maven POM ordering and would require cross-boundary matching that risks
+      // capturing the version of an earlier unrelated dependency.
       const afterArtifact = content.match(/<artifactId>lombok<\/artifactId>\s*<version>([^<]+)<\/version>/)
       if (afterArtifact) return afterArtifact[1].trim()
-      // <version> then <artifactId>lombok</artifactId>
-      const beforeArtifact = content.match(/<version>([^<]+)<\/version>\s*<\/dependency>[\s\S]*?<artifactId>lombok<\/artifactId>/)
-      if (beforeArtifact) return beforeArtifact[1].trim()
     } catch {
       // ignore unreadable files
     }

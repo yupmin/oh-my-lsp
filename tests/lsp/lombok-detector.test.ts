@@ -101,6 +101,33 @@ describe("detectLombokVersionFromBuildFile", () => {
 
     expect(detectLombokVersionFromBuildFile(projectDir)).toBeNull()
   })
+
+  it("does NOT capture version from a prior dependency when lombok comes later", () => {
+    // Regression: the old beforeArtifact regex would match spring-core's version (6.0.0)
+    // instead of returning null, because it matched </dependency> then [\s\S]*? then lombok.
+    const projectDir = join(tmpRoot, "project")
+    mkdirSync(projectDir)
+    writeFileSync(
+      join(projectDir, "pom.xml"),
+      `<project>
+        <dependencies>
+          <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>6.0.0</version>
+          </dependency>
+          <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+          </dependency>
+        </dependencies>
+      </project>`
+    )
+
+    // Must return the correct lombok version, not spring-core's version
+    expect(detectLombokVersionFromBuildFile(projectDir)).toBe("1.18.30")
+  })
 })
 
 // ---------------------------------------------------------------------------
