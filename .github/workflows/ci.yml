@@ -146,12 +146,9 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y ruby-full
           fi
-          GEM_USER_DIR="$(ruby -r rubygems -e 'puts Gem.user_dir')"
-          gem install --user-install ruby-lsp
-          GEM_BIN_DIR="$GEM_USER_DIR/bin"
+          sudo gem install ruby-lsp
+          GEM_BIN_DIR="$(ruby -r rubygems -e 'puts Gem.default_bindir')"
           echo "$GEM_BIN_DIR" >> "$GITHUB_PATH"
-          # Set GEM_HOME so bundler (used by ruby-lsp during startup) can find user-installed gems
-          echo "GEM_HOME=$GEM_USER_DIR" >> "$GITHUB_ENV"
 
       - name: Install Rust language server
         if: matrix.language == 'rust'
@@ -266,6 +263,18 @@ jobs:
       - name: Verify server installation (Ruby)
         if: matrix.language == 'ruby'
         run: command -v ruby-lsp
+
+      - name: Preflight ruby-lsp startup (debug)
+        if: matrix.language == 'ruby'
+        run: |
+          mkdir -p /tmp/ruby-lsp-debug
+          cd /tmp/ruby-lsp-debug
+          ruby-lsp 2>&1 &
+          RUBY_PID=$!
+          sleep 10
+          kill "$RUBY_PID" 2>/dev/null || true
+          wait "$RUBY_PID" 2>/dev/null || true
+          echo "Preflight done (exit ignored)"
 
       - name: Verify server installation (Rust)
         if: matrix.language == 'rust'
