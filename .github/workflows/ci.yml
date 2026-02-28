@@ -26,6 +26,36 @@ jobs:
       - name: Run test suite
         run: npm run test
 
+  ast-grep-cli-tests:
+    name: ast-grep-cli-tests
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install ast-grep
+        run: npm install -g @ast-grep/cli
+
+      - name: Verify ast-grep installation
+        run: command -v sg
+
+      - name: Run ast-grep search integration test
+        run: npm run test:cli:ast-grep-search
+
+      - name: Run ast-grep replace integration test
+        run: npm run test:cli:ast-grep-replace
+
   language-cli-tests-group-1:
     name: language-cli-tests-group-1 (${{ matrix.language }})
     needs: test
