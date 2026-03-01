@@ -13,6 +13,6 @@ The `oh-my-lsp` skill **MUST** be activated when the task involves any of:
 If a task involves:
 - Semantic symbol operations → LSP commands must be used.
 - Structural pattern transformations → AST-Grep must be used.
-- Any workspace modification → `diagnostics` must run before and after.
+- Any modification to LSP-supported files → `diagnostics` must run before and after.
 
 Failure to follow these sequences is considered non-compliant.
