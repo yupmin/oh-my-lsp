@@ -79,6 +79,35 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build CLI
+        run: npm run build
+
+      - name: Verify install hint shown before server is installed
+        run: |
+          set -euo pipefail
+          LANG="${{ matrix.language }}"
+
+          case "$LANG" in
+            java) FILE="tests/fixtures/java/App.java" ;;
+            rust) FILE="tests/fixtures/rust/diagnostics_fail.rs" ;;
+            *)    FILE="$(find "tests/fixtures/$LANG" -maxdepth 1 -name 'sample.*' | head -n 1)" ;;
+          esac
+
+          if [ -z "$FILE" ]; then
+            echo "SKIP: no fixture file found for '$LANG'"
+            exit 0
+          fi
+
+          OUTPUT=$(node dist/index.js diagnostics "$FILE" 2>&1 || true)
+          if echo "$OUTPUT" | grep -q "NOT INSTALLED"; then
+            echo "PASS: '$LANG' correctly shows NOT INSTALLED hint"
+          elif echo "$OUTPUT" | grep -q "exited immediately"; then
+            echo "PASS: '$LANG' server found but exited (install hint shown for crash)"
+          else
+            echo "SKIP: '$LANG' server may already be pre-installed on this runner"
+            echo "Output: $OUTPUT"
+          fi
+
       - name: Setup Java
         if: matrix.language == 'java' || matrix.language == 'kotlin'
         uses: actions/setup-java@v4

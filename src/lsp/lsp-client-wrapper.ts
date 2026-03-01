@@ -4,6 +4,7 @@ import { existsSync } from "fs"
 
 import { LSPClient, lspManager } from "./client"
 import { findServerForExtension } from "./config"
+import { LSP_INSTALL_HINTS } from "./constants"
 import type { ServerLookupResult } from "./types"
 
 export interface WithLspClientOptions {
@@ -99,6 +100,25 @@ export function formatServerLookupError(result: Exclude<ServerLookupResult, { st
   ].join("\n")
 }
 
+export function formatServerExitHint(serverId: string, command: string[], originalMessage: string): string {
+  const installHint = LSP_INSTALL_HINTS[serverId] || `Install '${command[0]}' and ensure it's in your PATH`
+  return [
+    `LSP server '${serverId}' exited immediately.`,
+    ``,
+    `Command: ${command.join(" ")}`,
+    ``,
+    `Possible causes:`,
+    `  - The server binary is installed but misconfigured or incompatible`,
+    `  - Required runtime dependencies are missing`,
+    `  - The server needs a specific project setup (e.g., build files, SDK)`,
+    ``,
+    `To reinstall or verify:`,
+    `  ${installHint}`,
+    ``,
+    originalMessage,
+  ].join("\n")
+}
+
 export async function withLspClient<T>(
   filePath: string,
   fn: (client: LSPClient) => Promise<T>,
@@ -114,7 +134,16 @@ export async function withLspClient<T>(
 
   const server = result.server
   const root = resolveLspRoot(absPath, options.basePath)
-  const client = await lspManager.getClient(root, server)
+
+  let client: LSPClient
+  try {
+    client = await lspManager.getClient(root, server)
+  } catch (e) {
+    if (e instanceof Error && e.message.includes("exited immediately")) {
+      throw new Error(formatServerExitHint(server.id, server.command, e.message))
+    }
+    throw e
+  }
 
   try {
     return await fn(client)

@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from "vitest"
 import {
   findWorkspaceRoot,
   formatServerLookupError,
+  formatServerExitHint,
   resolveLspRoot,
   uriToPath,
 } from "../../src/lsp/lsp-client-wrapper"
@@ -104,5 +105,34 @@ describe("formatServerLookupError", () => {
 
     expect(output).toContain("No LSP server configured for extension: .foo")
     expect(output).toContain("typescript, pyright")
+  })
+})
+
+describe("formatServerExitHint", () => {
+  it("includes server id, command, install hint, and original message", () => {
+    const output = formatServerExitHint(
+      "jdtls",
+      ["jdtls"],
+      "LSP server exited immediately with code 1"
+    )
+
+    expect(output).toContain("jdtls")
+    expect(output).toContain("exited immediately")
+    expect(output).toContain("Command: jdtls")
+    expect(output).toContain("To reinstall or verify:")
+    expect(output).toContain("https://github.com/eclipse-jdtls/eclipse.jdt.ls")
+    expect(output).toContain("LSP server exited immediately with code 1")
+  })
+
+  it("falls back to generic hint for unknown server id", () => {
+    const output = formatServerExitHint(
+      "custom-server",
+      ["custom-lsp", "--stdio"],
+      "LSP server exited immediately with code 1"
+    )
+
+    expect(output).toContain("custom-server")
+    expect(output).toContain("Command: custom-lsp --stdio")
+    expect(output).toContain("Install 'custom-lsp' and ensure it's in your PATH")
   })
 })
