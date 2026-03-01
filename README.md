@@ -30,7 +30,7 @@ Install the server for each language you need:
 | C/C++ | See [clangd](https://clangd.llvm.org/installation) |
 | Ruby | `gem install ruby-lsp` |
 | PHP | `npm install -g intelephense` |
-| Bash | `npm install -g bash-language-server` |
+| Bash | `npm install -g bash-language-server` (also install `shellcheck` for diagnostics) |
 | Kotlin | See [kotlin-lsp](https://github.com/Kotlin/kotlin-lsp) |
 | C# | `dotnet tool install -g csharp-ls` |
 | Lua | See [lua-language-server](https://github.com/LuaLS/lua-language-server) |
