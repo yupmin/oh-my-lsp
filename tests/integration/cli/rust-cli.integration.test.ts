@@ -8,6 +8,7 @@ import {
   createFixtureWorkspace,
   findNthOccurrencePosition,
   runCli,
+  runCliAsync,
 } from "./cli-test-utils"
 
 function hasWorkingRustAnalyzer(): boolean {
@@ -76,9 +77,13 @@ describeIfRustServer("CLI integration (Rust)", () => {
     expect(result.stdout.length).toBeGreaterThan(0)
   }, 120_000)
 
-  it("runs diagnostics", () => {
+  it("runs diagnostics", async () => {
     const { workspace, diagnosticsFailFile } = createDiagnosticsWorkspaceFiles()
-    const result = runCli(["diagnostics", diagnosticsFailFile, "--base-path", workspace, "--timeout", "60000"])
+
+    const warmup = runCli(["symbols", diagnosticsFailFile, "--scope", "document", "--base-path", workspace, "--timeout", "60000"])
+    expectCliSuccess(warmup)
+
+    const result = await runCliAsync(["diagnostics", diagnosticsFailFile, "--base-path", workspace, "--timeout", "60000"], 120_000)
 
     expectCliSuccess(result)
     expect(result.stdout).not.toContain("No diagnostics found")
