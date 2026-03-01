@@ -51,14 +51,14 @@ describeIfJdtls("CLI integration (Java)", () => {
   }, 240_000)
 
   it("runs diagnostics", () => {
-    const { workspace, appFile } = createWorkspaceFiles()
+    const { workspace, diagnosticsFailFile } = createWorkspaceFiles()
 
-    const warmup = runCli(["symbols", appFile, "--scope", "document", "--base-path", workspace, "--timeout", "120000"], 240_000)
+    const warmup = runCli(["symbols", diagnosticsFailFile, "--scope", "document", "--base-path", workspace, "--timeout", "120000"], 240_000)
     expectCliSuccess(warmup)
 
     const result = runCli([
       "diagnostics",
-      appFile,
+      diagnosticsFailFile,
       "--base-path",
       workspace,
       "--timeout",
