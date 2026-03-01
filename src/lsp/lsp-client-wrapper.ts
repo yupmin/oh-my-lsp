@@ -148,9 +148,6 @@ export async function withLspClient<T>(
   try {
     return await fn(client)
   } catch (e) {
-    if (e instanceof Error && e.message.includes("exited immediately")) {
-      throw new Error(formatServerExitHint(server.id, server.command, e.message))
-    }
     if (e instanceof Error && e.message.includes("timeout")) {
       const isInitializing = lspManager.isServerInitializing(root, server.id)
       if (isInitializing) {
