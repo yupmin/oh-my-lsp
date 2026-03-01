@@ -8,6 +8,7 @@ import {
   findNthOccurrencePosition,
   hasCommand,
   runCli,
+  runCliAsync,
 } from "./cli-test-utils"
 
 const describeIfJdtls = hasCommand("jdtls") ? describe : describe.skip
@@ -50,13 +51,13 @@ describeIfJdtls("CLI integration (Java)", () => {
     expect(result.stdout).toContain("App")
   }, 240_000)
 
-  it("runs diagnostics", () => {
+  it("runs diagnostics", async () => {
     const { workspace, diagnosticsFailFile } = createWorkspaceFiles()
 
     const warmup = runCli(["symbols", diagnosticsFailFile, "--scope", "document", "--base-path", workspace, "--timeout", "120000"], 240_000)
     expectCliSuccess(warmup)
 
-    const result = runCli([
+    const result = await runCliAsync([
       "diagnostics",
       diagnosticsFailFile,
       "--base-path",

@@ -94,7 +94,9 @@ export class LSPClient extends LSPClientConnection {
     const absPath = resolve(filePath)
     const uri = pathToFileURL(absPath).href
     await this.openFile(absPath)
-    await new Promise((r) => setTimeout(r, 500))
+    const slowServers = new Set(["jdtls", "kotlin-ls"])
+    const waitMs = slowServers.has(this.server.id) ? 10_000 : 500
+    await new Promise((r) => setTimeout(r, waitMs))
 
     try {
       const result = await this.sendRequest<{ items?: Diagnostic[] }>("textDocument/diagnostic", {
