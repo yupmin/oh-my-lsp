@@ -2,6 +2,48 @@
 
 Built by referencing `oh-my-opencode`'s [`src/tools/ast-grep`](https://github.com/code-yeongyu/oh-my-opencode/dev/src/tools/ast-grep), [`src/tools/lsp`](https://github.com/code-yeongyu/oh-my-opencode/dev/src/tools/lsp).
 
+## Prerequisites
+
+`oh-my-lsp` does **not** bundle language servers or ast-grep. You must install them separately.
+
+### ast-grep (required for `ast_grep_search` / `ast_grep_replace`)
+
+```bash
+npm install -g @ast-grep/cli
+# or
+cargo install ast-grep --locked
+# or
+brew install ast-grep
+```
+
+### LSP Servers (required for LSP commands)
+
+Install the server for each language you need:
+
+| Language | Install |
+|----------|---------|
+| TypeScript/JS | `npm install -g typescript-language-server typescript` |
+| Python | `pip install basedpyright` or `pip install pyright` |
+| Go | `go install golang.org/x/tools/gopls@latest` |
+| Rust | `rustup component add rust-analyzer` |
+| Java | See [eclipse.jdt.ls](https://github.com/eclipse-jdtls/eclipse.jdt.ls) |
+| C/C++ | See [clangd](https://clangd.llvm.org/installation) |
+| Ruby | `gem install ruby-lsp` |
+| PHP | `npm install -g intelephense` |
+| Bash | `npm install -g bash-language-server` |
+| Kotlin | See [kotlin-lsp](https://github.com/Kotlin/kotlin-lsp) |
+| C# | `dotnet tool install -g csharp-ls` |
+| Lua | See [lua-language-server](https://github.com/LuaLS/lua-language-server) |
+| YAML | `npm install -g yaml-language-server` |
+| Dockerfile | `npm install -g dockerfile-language-server-nodejs` |
+| CSS/HTML | `npm install -g @biomejs/biome` |
+| Vue | `npm install -g @vue/language-server` |
+| Svelte | `npm install -g svelte-language-server` |
+| Elixir | See [elixir-ls](https://github.com/elixir-lsp/elixir-ls) |
+| Haskell | `ghcup install hls` |
+
+> For the full list of built-in servers and install hints, see [`src/lsp/server-definitions.ts`](src/lsp/server-definitions.ts).
+
 ## Getting Started
 
 ```bash
