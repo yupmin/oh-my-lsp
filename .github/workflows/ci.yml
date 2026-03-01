@@ -85,41 +85,28 @@ jobs:
       - name: Verify install hint shown before server is installed
         run: |
           set -euo pipefail
+          LANG="${{ matrix.language }}"
 
-          SAMPLE_FILES="bash:tests/fixtures/bash/sample.sh"
-          SAMPLE_FILES="$SAMPLE_FILES c:tests/fixtures/c/sample.c"
-          SAMPLE_FILES="$SAMPLE_FILES cpp:tests/fixtures/cpp/sample.cpp"
-          SAMPLE_FILES="$SAMPLE_FILES csharp:tests/fixtures/csharp/sample.cs"
-          SAMPLE_FILES="$SAMPLE_FILES css:tests/fixtures/css/sample.css"
-          SAMPLE_FILES="$SAMPLE_FILES dockerfile:tests/fixtures/dockerfile/sample.dockerfile"
-          SAMPLE_FILES="$SAMPLE_FILES go:tests/fixtures/go/sample.go"
-          SAMPLE_FILES="$SAMPLE_FILES java:tests/fixtures/java/App.java"
-          SAMPLE_FILES="$SAMPLE_FILES javascript:tests/fixtures/javascript/sample.js"
-          SAMPLE_FILES="$SAMPLE_FILES kotlin:tests/fixtures/kotlin/sample.kt"
-          SAMPLE_FILES="$SAMPLE_FILES lua:tests/fixtures/lua/sample.lua"
-          SAMPLE_FILES="$SAMPLE_FILES php:tests/fixtures/php/sample.php"
-          SAMPLE_FILES="$SAMPLE_FILES python:tests/fixtures/python/sample.py"
-          SAMPLE_FILES="$SAMPLE_FILES ruby:tests/fixtures/ruby/sample.rb"
-          SAMPLE_FILES="$SAMPLE_FILES rust:tests/fixtures/rust/diagnostics_fail.rs"
-          SAMPLE_FILES="$SAMPLE_FILES typescript:tests/fixtures/typescript/sample.ts"
-          SAMPLE_FILES="$SAMPLE_FILES yaml:tests/fixtures/yaml/sample.yaml"
+          case "$LANG" in
+            java) FILE="tests/fixtures/java/App.java" ;;
+            rust) FILE="tests/fixtures/rust/diagnostics_fail.rs" ;;
+            *)    FILE="$(find "tests/fixtures/$LANG" -maxdepth 1 -name 'sample.*' | head -n 1)" ;;
+          esac
 
-          for entry in $SAMPLE_FILES; do
-            lang="${entry%%:*}"
-            file="${entry#*:}"
-            if [ "$lang" = "${{ matrix.language }}" ]; then
-              OUTPUT=$(node dist/index.js diagnostics "$file" 2>&1 || true)
-              if echo "$OUTPUT" | grep -q "NOT INSTALLED"; then
-                echo "PASS: '$lang' correctly shows NOT INSTALLED hint"
-              elif echo "$OUTPUT" | grep -q "exited immediately"; then
-                echo "PASS: '$lang' server found but exited (install hint shown for crash)"
-              else
-                echo "SKIP: '$lang' server may already be pre-installed on this runner"
-                echo "Output: $OUTPUT"
-              fi
-              break
-            fi
-          done
+          if [ -z "$FILE" ]; then
+            echo "SKIP: no fixture file found for '$LANG'"
+            exit 0
+          fi
+
+          OUTPUT=$(node dist/index.js diagnostics "$FILE" 2>&1 || true)
+          if echo "$OUTPUT" | grep -q "NOT INSTALLED"; then
+            echo "PASS: '$LANG' correctly shows NOT INSTALLED hint"
+          elif echo "$OUTPUT" | grep -q "exited immediately"; then
+            echo "PASS: '$LANG' server found but exited (install hint shown for crash)"
+          else
+            echo "SKIP: '$LANG' server may already be pre-installed on this runner"
+            echo "Output: $OUTPUT"
+          fi
 
       - name: Setup Java
         if: matrix.language == 'java' || matrix.language == 'kotlin'
