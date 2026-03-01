@@ -7,151 +7,163 @@ description: Run and interpret the oh-my-lsp CLI for code navigation, refactorin
 
 Use this skill to execute `oh-my-lsp` commands reliably and report actionable results.
 
-## For AI Agents
+Run: `npx oh-my-lsp <command> <args...>`
+Use `--base-path <project-root>` whenever workspace root is known.
 
-### Working In This Directory
+## Core Principles
 
-#### LSP Tools Usage
+1. **Pattern-based search or bulk transformation → AST-Grep first**
+   - Structural code patterns across files, mechanical transformations → `ast_grep_search` / `ast_grep_replace`.
+2. **Symbol-based navigation or refactoring → LSP**
+   - Semantic precision (definition, references, rename) → LSP commands.
+3. **Always run `diagnostics` before and after modifications**
+   - Before: establish baseline. After: verify no new errors.
+4. **Rename must always follow: `prepare_rename` → `rename`**
+   - Never call `rename` without `prepare_rename`.
 
-**Basic code intelligence:**
-```shell
-// Jump to definition
-npx oh-my-lsp goto_definition src/index.ts --line 10 --character 15
+## Quick Decision Guide
 
-// Find all usages
-npx oh-my-lsp find_references src/index.ts --line 10 --character 15
-```
+- "Where is this symbol defined?" → `goto_definition`
+- "Where is this symbol used?" → `find_references`
+- "What symbols exist in this file/workspace?" → `symbols`
+- "Is the workspace currently broken?" → `diagnostics`
+- "Can I safely rename this?" → `prepare_rename`
+- "Rename this symbol everywhere." → `rename`
+- "Find this structural code pattern." → `ast_grep_search`
+- "Replace this structural pattern." → `ast_grep_replace`
 
-**File/project analysis:**
-```shell
-// Get file outline (all symbols)
-npx oh-my-lsp symbols src/index.ts --scope document
+## Required Workflow
 
-// Search symbols across workspace
-npx oh-my-lsp symbols src/index.ts --scope workspace --query createSession
+**You MUST follow these steps. Do NOT skip ahead.**
 
-// Single file diagnostics
-npx oh-my-lsp diagnostics src/index.ts --severity error
-```
+### AST workflow
 
-**Refactoring support:**
-```shell
-// Check if rename is valid
-npx oh-my-lsp prepare_rename src/index.ts --line 10 --character 15
+1. **MUST** run `ast_grep_search` first to preview target locations.
+2. **MUST** run `ast_grep_replace` with default dry-run to verify rewrites.
+3. **ONLY THEN** run `ast_grep_replace --no-dry-run` — and only when user explicitly requests real edits.
 
-// Rename symbol (applies changes across workspace)
-npx oh-my-lsp rename src/index.ts newFunction --line 10 --character 15
-```
+### LSP workflow
 
-#### AST Tools Usage
+1. **MUST** run `diagnostics` first to detect syntax/type blockers.
+2. **MUST** run `symbols` to obtain the target symbol's exact `line`/`character` position.
+3. **MUST** run `goto_definition` with the position from step 2 to reach the definition site.
+4. **THEN** run `find_references` with the confirmed position to search usages.
+5. **MUST** run `prepare_rename` before `rename`.
+6. **ONLY THEN** run `rename` — and only after reporting expected file modifications to the user.
 
-**Pattern search with meta-variables:**
-```shell
-// Find all function declarations
-npx oh-my-lsp ast_grep_search typescript "function $NAME($$$ARGS)" --paths src
+## Command Order by Task Type
 
-// Find console.log calls
-npx oh-my-lsp ast_grep_search typescript "console.log($MSG)"
+### Code Exploration
+1. `symbols` → 2. `goto_definition` → 3. `find_references` → 4. `ast_grep_search` (if needed) → 5. `diagnostics` (if issues found)
 
-// Find if statements
-npx oh-my-lsp ast_grep_search typescript "if ($COND) { $$$BODY }"
+### Debugging / Error Investigation
+1. `diagnostics` → 2. `goto_definition` → 3. `find_references` → 4. `ast_grep_search` (if pattern issue) → 5. Fix → 6. `diagnostics`
 
-// Find null checks
-npx oh-my-lsp ast_grep_search typescript "$X === null"
-```
+### Symbol Rename (LSP)
+1. `diagnostics` → 2. `goto_definition` → 3. `find_references` → 4. `prepare_rename` → 5. `rename` → 6. `diagnostics`
 
-**AST-aware replacement:**
-```shell
-// Convert console.log to logger (dry run by default)
-npx oh-my-lsp ast_grep_replace typescript "console.log($MSG)" "logger.info($MSG)"
+### Pattern-Based Bulk Refactoring (AST)
+1. `diagnostics` → 2. `ast_grep_search` → 3. Review matches → 4. `ast_grep_replace` → 5. `diagnostics`
 
-// Convert var to const
-npx oh-my-lsp ast_grep_replace typescript "var $NAME = $VALUE" "const $NAME = $VALUE" --no-dry-run
-```
-
-## Run CLI
-
-1. Run from repo root.
-2. Ensure the package is available in the environment.
-
-3. Run commands with:
-
-```bash
-npx oh-my-lsp <command> <args...>
-```
-
-4. Example:
-
-```bash
-npx oh-my-lsp diagnostics src/index.ts
-```
-
-5. Prefer explicit workspace root with:
-
-```bash
---base-path <project-root>
-```
+### Mixed Refactoring (AST + LSP)
+1. `diagnostics` → 2. `ast_grep_search` → 3. `ast_grep_replace` → 4. `find_references` → 5. `prepare_rename` → 6. `rename` → 7. `diagnostics`
 
 ## Command Usage
 
-- `goto_definition`
-  - Use to locate symbol definition.
-  - Requires: `<file-path>`
-  - Common options: `--line <0-based> --character <0-based> --timeout <ms> --base-path <path>`
+### `goto_definition`
 
-- `find_references`
-  - Use to locate all symbol usages.
-  - Requires: `<file-path>`
-  - Common options: `--line <0-based> --character <0-based> --timeout <ms> --base-path <path>`
-  - Optional: `--no-include-declaration`
+Locate symbol definition.
 
-- `symbols`
-  - Use to inspect document symbols or workspace symbol search.
-  - Requires: `<file-path>`
-  - Options: `--scope document|workspace --query <query> --limit <n> --timeout <ms> --base-path <path>`
-  - Require `--query` when `--scope workspace`.
+- Requires: `<file-path>`
+- Options: `--line <0-based> --character <0-based> --timeout <ms> --base-path <path>`
+- Example: `npx oh-my-lsp goto_definition src/index.ts --line 10 --character 15`
 
-- `diagnostics`
-  - Use to collect errors/warnings/hints from the language server.
-  - Requires: `<file-path>`
-  - Options: `--severity error|warning|information|hint|all --timeout <ms> --base-path <path>`
+### `find_references`
 
-- `prepare_rename`
-  - Use to validate rename availability before mutation.
-  - Requires: `<file-path>`
-  - Options: `--line <0-based> --character <0-based> --timeout <ms> --base-path <path>`
+Locate all symbol usages.
 
-- `rename`
-  - Use to apply rename edits across workspace.
-  - Requires: `<file-path> <new-name>`
-  - Options: `--line <0-based> --character <0-based> --timeout <ms> --base-path <path>`
+- Requires: `<file-path>`
+- Options: `--line <0-based> --character <0-based> --timeout <ms> --base-path <path>`
+- Optional: `--no-include-declaration`
+- Example: `npx oh-my-lsp find_references src/index.ts --line 10 --character 15`
 
-- `ast_grep_search`
-  - Use for AST-aware code pattern search across files.
-  - Requires: `<lang> <pattern>`
-  - Options: `--paths <path...> --globs <glob...> --context <n> --timeout <ms>`
-  - `lang` must be one of:
-    - `bash`, `c`, `cpp`, `csharp`, `css`, `elixir`, `go`, `haskell`, `html`, `java`, `javascript`, `json`, `kotlin`, `lua`, `nix`, `php`, `python`, `ruby`, `rust`, `scala`, `solidity`, `swift`, `typescript`, `tsx`, `yaml`
-  - Pattern should be a complete AST node and can use meta variables (`$VAR`, `$$$`).
+### `symbols`
 
-- `ast_grep_replace`
-  - Use for AST-aware code replacement.
-  - Requires: `<lang> <pattern> <rewrite>`
-  - Options: `--paths <path...> --globs <glob...> --no-dry-run --timeout <ms>`
-  - Dry-run is default; use `--no-dry-run` to apply edits.
+Inspect document symbols or workspace symbol search.
 
-## Recommended Workflow
+- Requires: `<file-path>`
+- Options: `--scope document|workspace --query <query> --limit <n> --timeout <ms> --base-path <path>`
+- Require `--query` when `--scope workspace`.
+- Examples:
+  ```shell
+  # Get file outline
+  npx oh-my-lsp symbols src/index.ts --scope document
+  # Search symbols across workspace
+  npx oh-my-lsp symbols src/index.ts --scope workspace --query createSession
+  ```
 
-1. Run `ast_grep_search` before `ast_grep_replace` to preview target locations.
-2. Run `ast_grep_replace` with default dry-run first; only use `--no-dry-run` when user requested real edits.
-3. Run `diagnostics` first to detect syntax/type blockers.
-4. Run `symbols` to inspect document/workspace symbol structure.
-5. Run `goto_definition` or `find_references` for navigation.
-6. Run `prepare_rename` before `rename`.
-7. Run `rename` only after reporting expected file modifications.
+### `diagnostics`
+
+Collect errors/warnings/hints from the language server.
+
+- Requires: `<file-path>`
+- Options: `--severity error|warning|information|hint|all --timeout <ms> --base-path <path>`
+- Example: `npx oh-my-lsp diagnostics src/index.ts --severity error`
+
+### `prepare_rename`
+
+Validate rename availability before mutation.
+
+- Requires: `<file-path>`
+- Options: `--line <0-based> --character <0-based> --timeout <ms> --base-path <path>`
+- Example: `npx oh-my-lsp prepare_rename src/index.ts --line 10 --character 15`
+
+### `rename`
+
+Apply rename edits across workspace.
+
+- Requires: `<file-path> <new-name>`
+- Options: `--line <0-based> --character <0-based> --timeout <ms> --base-path <path>`
+- Example: `npx oh-my-lsp rename src/index.ts newFunction --line 10 --character 15`
+
+### `ast_grep_search`
+
+AST-aware code pattern search across files.
+
+- Requires: `<lang> <pattern>`
+- Options: `--paths <path...> --globs <glob...> --context <n> --timeout <ms>`
+- `lang` must be one of:
+  - `bash`, `c`, `cpp`, `csharp`, `css`, `elixir`, `go`, `haskell`, `html`, `java`, `javascript`, `json`, `kotlin`, `lua`, `nix`, `php`, `python`, `ruby`, `rust`, `scala`, `solidity`, `swift`, `typescript`, `tsx`, `yaml`
+- Pattern should be a complete AST node and can use meta variables (`$VAR`, `$$$`).
+- Examples:
+  ```shell
+  # Find all function declarations
+  npx oh-my-lsp ast_grep_search typescript "function $NAME($$$ARGS)" --paths src
+  # Find console.log calls
+  npx oh-my-lsp ast_grep_search typescript "console.log($MSG)"
+  # Find null checks
+  npx oh-my-lsp ast_grep_search typescript "$X === null"
+  ```
+
+### `ast_grep_replace`
+
+AST-aware code replacement.
+
+- Requires: `<lang> <pattern> <rewrite>`
+- Options: `--paths <path...> --globs <glob...> --no-dry-run --timeout <ms>`
+- Dry-run is default; use `--no-dry-run` to apply edits.
+- Examples:
+  ```shell
+  # Convert console.log to logger (dry run by default)
+  npx oh-my-lsp ast_grep_replace typescript "console.log($MSG)" "logger.info($MSG)"
+  # Convert var to const (apply changes)
+  npx oh-my-lsp ast_grep_replace typescript "var $NAME = $VALUE" "const $NAME = $VALUE" --no-dry-run
+  ```
 
 ## Operational Rules
 
+- **`<file-path>` must be an actual file, NOT a directory.** The tool detects the LSP server from the file extension. Passing a directory (e.g. `src/main/java`) will fail with `No LSP server configured for extension:`.
+- **Never guess file paths.** If the exact file path is unknown, run `ast_grep_search` first to locate the symbol. The search result provides the real file path and position, which can then be used as input for LSP commands.
 - Treat `line` and `character` as 0-based input.
 - Use `--base-path` whenever project root is known.
 - Use `--timeout 60000` for Java (`jdtls`) flows.
