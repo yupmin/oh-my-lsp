@@ -60,9 +60,7 @@ describeIfPhpServer("CLI integration (PHP)", () => {
     const result = runCli([
       "goto_definition",
       sampleFile,
-      "--line",
       String(callPos.line),
-      "--character",
       String(callPos.character),
       "--base-path",
       workspace,
@@ -81,9 +79,7 @@ describeIfPhpServer("CLI integration (PHP)", () => {
     const result = runCli([
       "find_references",
       sampleFile,
-      "--line",
       String(definitionPos.line),
-      "--character",
       String(definitionPos.character),
       "--base-path",
       workspace,

@@ -22,11 +22,6 @@ type RuntimeOptions = {
   basePath?: string
 }
 
-type PositionOptions = RuntimeOptions & {
-  line: number
-  character: number
-}
-
 function parseLine(value: string): number {
   const parsed = Number(value)
   if (!Number.isInteger(parsed) || parsed < 0) {
@@ -153,19 +148,19 @@ program
   .command("goto_definition")
   .description("Jump to symbol definition. Find WHERE something is defined.")
   .argument("<file-path>", "Target file path")
-  .option("--line <line>", "0-based line", parseLine, 0)
-  .option("--character <character>", "0-based character", parseCharacter, 0)
+  .argument("<line>", "0-based line", parseLine)
+  .argument("<character>", "0-based character", parseCharacter)
   .option("--timeout <ms>", "LSP request timeout in milliseconds", parseTimeout, 60000)
   .option("--base-path <base-path>", "Base path used as LSP workspace root", parseBasePath)
   .option("--verbose", "Enable verbose runtime logging")
-  .action(async (filePath: string, options: PositionOptions) => {
+  .action(async (filePath: string, line: number, character: number, options: RuntimeOptions) => {
     applyRuntimeOptions(options)
     await runAndPrint(
       () =>
         gotoDefinition({
           filePath,
-          line: toOneBasedLine(options.line),
-          character: options.character,
+          line: toOneBasedLine(line),
+          character,
           basePath: options.basePath,
         })
     )
@@ -175,8 +170,8 @@ program
   .command("find_references")
   .description("Find ALL usages/references of a symbol across the entire workspace.")
   .argument("<file-path>", "Target file path")
-  .option("--line <line>", "0-based line", parseLine, 0)
-  .option("--character <character>", "0-based character", parseCharacter, 0)
+  .argument("<line>", "0-based line", parseLine)
+  .argument("<character>", "0-based character", parseCharacter)
   .option("--timeout <ms>", "LSP request timeout in milliseconds", parseTimeout, 60000)
   .option("--base-path <base-path>", "Base path used as LSP workspace root", parseBasePath)
   .option("--verbose", "Enable verbose runtime logging")
@@ -184,15 +179,17 @@ program
   .action(
     async (
       filePath: string,
-      options: PositionOptions & { includeDeclaration: boolean }
+      line: number,
+      character: number,
+      options: RuntimeOptions & { includeDeclaration: boolean }
     ) => {
       applyRuntimeOptions(options)
       await runAndPrint(
         () =>
           findReferences({
             filePath,
-            line: toOneBasedLine(options.line),
-            character: options.character,
+            line: toOneBasedLine(line),
+            character,
             includeDeclaration: options.includeDeclaration,
             basePath: options.basePath,
           })
@@ -258,19 +255,19 @@ program
   .command("prepare_rename")
   .description("Check if rename is valid. Use BEFORE rename.")
   .argument("<file-path>", "Target file path")
-  .option("--line <line>", "0-based line", parseLine, 0)
-  .option("--character <character>", "0-based character", parseCharacter, 0)
+  .argument("<line>", "0-based line", parseLine)
+  .argument("<character>", "0-based character", parseCharacter)
   .option("--timeout <ms>", "LSP request timeout in milliseconds", parseTimeout, 60000)
   .option("--base-path <base-path>", "Base path used as LSP workspace root", parseBasePath)
   .option("--verbose", "Enable verbose runtime logging")
-  .action(async (filePath: string, options: PositionOptions) => {
+  .action(async (filePath: string, line: number, character: number, options: RuntimeOptions) => {
     applyRuntimeOptions(options)
     await runAndPrint(
       () =>
         prepareRename({
           filePath,
-          line: toOneBasedLine(options.line),
-          character: options.character,
+          line: toOneBasedLine(line),
+          character,
           basePath: options.basePath,
         })
     )
@@ -281,19 +278,19 @@ program
   .description("Rename symbol across entire workspace. APPLIES changes to all files.")
   .argument("<file-path>", "Target file path")
   .argument("<new-name>", "New symbol name")
-  .option("--line <line>", "0-based line", parseLine, 0)
-  .option("--character <character>", "0-based character", parseCharacter, 0)
+  .argument("<line>", "0-based line", parseLine)
+  .argument("<character>", "0-based character", parseCharacter)
   .option("--timeout <ms>", "LSP request timeout in milliseconds", parseTimeout, 60000)
   .option("--base-path <base-path>", "Base path used as LSP workspace root", parseBasePath)
   .option("--verbose", "Enable verbose runtime logging")
-  .action(async (filePath: string, newName: string, options: PositionOptions) => {
+  .action(async (filePath: string, newName: string, line: number, character: number, options: RuntimeOptions) => {
     applyRuntimeOptions(options)
     await runAndPrint(
       () =>
         rename({
           filePath,
-          line: toOneBasedLine(options.line),
-          character: options.character,
+          line: toOneBasedLine(line),
+          character,
           newName,
           basePath: options.basePath,
         })

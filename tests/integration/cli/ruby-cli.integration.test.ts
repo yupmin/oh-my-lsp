@@ -62,9 +62,7 @@ describeIfRubyServer("CLI integration (Ruby)", () => {
     const result = runCli([
       "find_references",
       sampleFile,
-      "--line",
       String(definitionPos.line),
-      "--character",
       String(definitionPos.character),
       "--base-path",
       workspace,
