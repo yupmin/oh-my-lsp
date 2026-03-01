@@ -94,9 +94,13 @@ describeIfJdtls("CLI integration (Java)", () => {
   it("runs find_references", () => {
     const { workspace, helperFile } = createWorkspaceFiles()
 
+    const definitionPos = findNthOccurrencePosition(helperFile, "add(", 1)
+
     const result = runCli([
       "find_references",
       helperFile,
+      String(definitionPos.line),
+      String(definitionPos.character),
       "--base-path",
       workspace,
       "--timeout",
