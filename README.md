@@ -82,6 +82,29 @@ Basic format:
 oh-my-lsp <command> <args...>
 ```
 
+### For AI Agents
+
+If you are using `oh-my-lsp` with an AI coding agent (e.g. Claude Code, Cursor, Windsurf), add the following to your project's `CLAUDE.md` or `AGENTS.md` to enforce correct tool usage:
+
+```markdown
+## When Does `oh-my-lsp` Skill Apply?
+
+The `oh-my-lsp` skill **MUST** be activated when the task involves any of:
+- Finding definitions, references, or symbols
+- Inspecting diagnostics (errors/warnings)
+- Renaming symbols
+- AST-aware pattern search or replace
+
+## Enforcement Rule
+
+If a task involves:
+- Semantic symbol operations → LSP commands must be used.
+- Structural pattern transformations → AST-Grep must be used.
+- Any workspace modification → `diagnostics` must run before and after.
+
+Failure to follow these sequences is considered non-compliant.
+```
+
 ### LSP Tools (IDE Features for Agents)
 
 | Tool | Description |
@@ -194,29 +217,6 @@ oh-my-lsp ast_grep_replace <lang> <pattern> <rewrite> [--paths <path1> <path2> .
 
 - Dry-run preview is default
 - Use `--no-dry-run` to apply changes to files
-
-## For AI Agents
-
-If you are using `oh-my-lsp` with an AI coding agent (e.g. Claude Code, Cursor, Windsurf), add the following to your project's `CLAUDE.md` or `AGENTS.md` to enforce correct tool usage:
-
-```markdown
-## When Does `oh-my-lsp` Skill Apply?
-
-The `oh-my-lsp` skill **MUST** be activated when the task involves any of:
-- Finding definitions, references, or symbols
-- Inspecting diagnostics (errors/warnings)
-- Renaming symbols
-- AST-aware pattern search or replace
-
-## Enforcement Rule
-
-If a task involves:
-- Semantic symbol operations → LSP commands must be used.
-- Structural pattern transformations → AST-Grep must be used.
-- Any workspace modification → `diagnostics` must run before and after.
-
-Failure to follow these sequences is considered non-compliant.
-```
 
 ## License
 
