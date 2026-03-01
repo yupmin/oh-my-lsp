@@ -74,18 +74,18 @@ Use `--base-path <project-root>` whenever workspace root is known.
 
 Locate symbol definition.
 
-- Requires: `<file-path>`
-- Options: `--line <0-based> --character <0-based> --timeout <ms> --base-path <path>`
-- Example: `npx oh-my-lsp goto_definition src/index.ts --line 10 --character 15`
+- Requires: `<file-path> <line> <character>`
+- Options: `--timeout <ms> --base-path <path>`
+- Example: `npx oh-my-lsp goto_definition src/index.ts 10 15`
 
 ### `find_references`
 
 Locate all symbol usages.
 
-- Requires: `<file-path>`
-- Options: `--line <0-based> --character <0-based> --timeout <ms> --base-path <path>`
+- Requires: `<file-path> <line> <character>`
+- Options: `--timeout <ms> --base-path <path>`
 - Optional: `--no-include-declaration`
-- Example: `npx oh-my-lsp find_references src/index.ts --line 10 --character 15`
+- Example: `npx oh-my-lsp find_references src/index.ts 10 15`
 
 ### `symbols`
 
@@ -114,17 +114,17 @@ Collect errors/warnings/hints from the language server.
 
 Validate rename availability before mutation.
 
-- Requires: `<file-path>`
-- Options: `--line <0-based> --character <0-based> --timeout <ms> --base-path <path>`
-- Example: `npx oh-my-lsp prepare_rename src/index.ts --line 10 --character 15`
+- Requires: `<file-path> <line> <character>`
+- Options: `--timeout <ms> --base-path <path>`
+- Example: `npx oh-my-lsp prepare_rename src/index.ts 10 15`
 
 ### `rename`
 
 Apply rename edits across workspace.
 
-- Requires: `<file-path> <new-name>`
-- Options: `--line <0-based> --character <0-based> --timeout <ms> --base-path <path>`
-- Example: `npx oh-my-lsp rename src/index.ts newFunction --line 10 --character 15`
+- Requires: `<file-path> <new-name> <line> <character>`
+- Options: `--timeout <ms> --base-path <path>`
+- Example: `npx oh-my-lsp rename src/index.ts newFunction 10 15`
 
 ### `ast_grep_search`
 
@@ -174,4 +174,4 @@ AST-aware code replacement.
 
 - If output contains `NOT INSTALLED`, install the missing LSP server binary and ensure it is on `PATH`.
 - If output contains `LSP server exited immediately`, report runtime/environment issue (often server runtime/config).
-- If output says `No ... found`, retry with corrected cursor (`--line`, `--character`) and explicit `--base-path`.
+- If output says `No ... found`, retry with corrected cursor (`<line>`, `<character>`) and explicit `--base-path`.

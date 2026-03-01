@@ -78,9 +78,7 @@ describeIfJdtls("CLI integration (Java)", () => {
     const result = runCli([
       "goto_definition",
       appFile,
-      "--line",
       String(callPos.line),
-      "--character",
       String(callPos.character),
       "--base-path",
       workspace,
@@ -96,9 +94,13 @@ describeIfJdtls("CLI integration (Java)", () => {
   it("runs find_references", () => {
     const { workspace, helperFile } = createWorkspaceFiles()
 
+    const definitionPos = findNthOccurrencePosition(helperFile, "add(", 1)
+
     const result = runCli([
       "find_references",
       helperFile,
+      String(definitionPos.line),
+      String(definitionPos.character),
       "--base-path",
       workspace,
       "--timeout",
@@ -115,9 +117,7 @@ describeIfJdtls("CLI integration (Java)", () => {
     const result = runCli([
       "prepare_rename",
       helperFile,
-      "--line",
       String(definitionPos.line),
-      "--character",
       String(definitionPos.character),
       "--base-path",
       workspace,
@@ -137,9 +137,7 @@ describeIfJdtls("CLI integration (Java)", () => {
       "rename",
       helperFile,
       "sum",
-      "--line",
       String(definitionPos.line),
-      "--character",
       String(definitionPos.character),
       "--base-path",
       workspace,
