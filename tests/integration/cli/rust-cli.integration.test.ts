@@ -81,9 +81,8 @@ describeIfRustServer("CLI integration (Rust)", () => {
     const result = runCli(["diagnostics", diagnosticsFailFile, "--base-path", workspace, "--timeout", "60000"])
 
     expectCliSuccess(result)
-    const hasNoDiagnostics = result.stdout.includes("No diagnostics found")
-    const hasDiagnosticLine = / at \d+:\d+:/.test(result.stdout)
-    expect(hasNoDiagnostics || hasDiagnosticLine).toBe(true)
+    expect(result.stdout).not.toContain("No diagnostics found")
+    expect(result.stdout).toMatch(/ at \d+:\d+:/)
   }, 120_000)
 
 
