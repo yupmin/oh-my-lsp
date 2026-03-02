@@ -1,4 +1,4 @@
-import { readFileSync } from "fs"
+import { readFileSync, realpathSync } from "fs"
 import { extname, resolve } from "path"
 import { pathToFileURL } from "node:url"
 
@@ -93,11 +93,10 @@ export class LSPClient extends LSPClientConnection {
   async diagnostics(filePath: string): Promise<{ items: Diagnostic[] }> {
     const absPath = resolve(filePath)
     const uri = pathToFileURL(absPath).href
+    const realUri = pathToFileURL(realpathSync(absPath)).href
     await this.openFile(absPath)
-    const slowServers = new Set(["jdtls", "kotlin-ls", "rust"])
-    const waitMs = slowServers.has(this.server.id) ? 10_000 : 500
-    await new Promise((r) => setTimeout(r, waitMs))
 
+    // Try pull diagnostics first (textDocument/diagnostic)
     try {
       const result = await this.sendRequest<{ items?: Diagnostic[] }>("textDocument/diagnostic", {
         textDocument: { uri },
@@ -105,9 +104,25 @@ export class LSPClient extends LSPClientConnection {
       if (result && typeof result === "object" && "items" in result) {
         return result as { items: Diagnostic[] }
       }
-    } catch {}
+    } catch {
+      // Server doesn't support pull diagnostics, fall through to polling push diagnostics
+    }
 
-    return { items: this.diagnosticsStore.get(uri) ?? [] }
+    // Poll push diagnostics (textDocument/publishDiagnostics) from the store
+    const slowServers = new Set(["jdtls", "kotlin-ls", "rust"])
+    const maxWaitMs = slowServers.has(this.server.id) ? 30_000 : 3_000
+    const pollIntervalMs = 500
+    const deadline = Date.now() + maxWaitMs
+
+    while (Date.now() < deadline) {
+      const stored = this.diagnosticsStore.get(uri) ?? this.diagnosticsStore.get(realUri)
+      if (stored && stored.length > 0) {
+        return { items: stored }
+      }
+      await new Promise((r) => setTimeout(r, pollIntervalMs))
+    }
+
+    return { items: this.diagnosticsStore.get(uri) ?? this.diagnosticsStore.get(realUri) ?? [] }
   }
 
   async prepareRename(filePath: string, line: number, character: number): Promise<unknown> {
