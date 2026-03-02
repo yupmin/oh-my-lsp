@@ -96,35 +96,29 @@ export class LSPClient extends LSPClientConnection {
     const realUri = pathToFileURL(realpathSync(absPath)).href
     await this.openFile(absPath)
 
+    // Try pull diagnostics first (textDocument/diagnostic)
+    try {
+      const result = await this.sendRequest<{ items?: Diagnostic[] }>("textDocument/diagnostic", {
+        textDocument: { uri },
+      })
+      if (result && typeof result === "object" && "items" in result) {
+        return result as { items: Diagnostic[] }
+      }
+    } catch {
+      // Server doesn't support pull diagnostics, fall through to polling push diagnostics
+    }
+
+    // Poll push diagnostics (textDocument/publishDiagnostics) from the store
     const slowServers = new Set(["jdtls", "kotlin-ls", "rust"])
     const maxWaitMs = slowServers.has(this.server.id) ? 30_000 : 3_000
     const pollIntervalMs = 500
-    let pullSupported = true
-
     const deadline = Date.now() + maxWaitMs
 
     while (Date.now() < deadline) {
-      if (pullSupported) {
-        try {
-          const result = await this.sendRequest<{ items?: Diagnostic[] }>("textDocument/diagnostic", {
-            textDocument: { uri },
-          })
-          if (result && typeof result === "object" && "items" in result) {
-            const items = result.items ?? []
-            if (items.length > 0) {
-              return { items }
-            }
-          }
-        } catch {
-          pullSupported = false
-        }
-      }
-
       const stored = this.diagnosticsStore.get(uri) ?? this.diagnosticsStore.get(realUri)
       if (stored && stored.length > 0) {
         return { items: stored }
       }
-
       await new Promise((r) => setTimeout(r, pollIntervalMs))
     }
 
