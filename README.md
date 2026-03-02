@@ -1,5 +1,7 @@
 # oh-my-lsp CLI
 
+[![CI](https://github.com/yupmin/oh-my-lsp/actions/workflows/ci.yml/badge.svg)](https://github.com/yupmin/oh-my-lsp/actions/workflows/ci.yml)
+
 Built by referencing `oh-my-opencode`'s [`src/tools/ast-grep`](https://github.com/code-yeongyu/oh-my-opencode/dev/src/tools/ast-grep), [`src/tools/lsp`](https://github.com/code-yeongyu/oh-my-opencode/dev/src/tools/lsp).
 
 ## Prerequisites
