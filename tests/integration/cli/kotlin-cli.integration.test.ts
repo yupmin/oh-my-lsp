@@ -113,6 +113,8 @@ describeIfKotlinLs("CLI integration (Kotlin)", () => {
     expect(referenceLines.length).toBeGreaterThanOrEqual(2)
   }, 240_000)
 
+  it.skip("runs prepare_rename", () => {})
+
   it("runs rename", async () => {
     const { workspace, sampleFile } = createWorkspaceFiles()
     const definitionPos = findNthOccurrencePosition(sampleFile, "add(", 1)
