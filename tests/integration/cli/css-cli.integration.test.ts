@@ -45,4 +45,9 @@ describeIfCssServer("CLI integration (CSS)", () => {
     expect(result.stdout).not.toContain("No diagnostics found")
     expect(result.stdout).toMatch(/ at \d+:\d+:/)
   }, 120_000)
+
+  it.skip("runs goto_definition", () => {})
+  it.skip("runs find_references", () => {})
+  it.skip("runs prepare_rename", () => {})
+  it.skip("runs rename", () => {})
 })
