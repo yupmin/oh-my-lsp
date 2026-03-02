@@ -1,6 +1,6 @@
 {
   "name": "oh-my-lsp",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "TypeScript CLI scaffold with commander.js",
   "bin": {
     "oh-my-lsp": "./dist/index.js"
