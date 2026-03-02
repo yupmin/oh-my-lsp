@@ -1,5 +1,5 @@
 {
-  "name": "oh-my-lsp-cli",
+  "name": "oh-my-lsp",
   "version": "0.1.1",
   "description": "TypeScript CLI scaffold with commander.js",
   "bin": {
