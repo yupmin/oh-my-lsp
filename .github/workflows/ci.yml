@@ -368,7 +368,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [rust]
+        language: [rust, csharp]
     steps: *language_cli_tests_steps
 
   language-cli-tests-group-3:
@@ -378,5 +378,5 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [c, cpp, csharp, css, bash, yaml, dockerfile]
+        language: [c, cpp, css, bash, yaml, dockerfile]
     steps: *language_cli_tests_steps
