@@ -8,6 +8,7 @@ import {
   findNthOccurrencePosition,
   hasCommand,
   runCli,
+  runCliAsync,
 } from "./cli-test-utils"
 
 const describeIfJdtls = hasCommand("jdtls") ? describe : describe.skip
@@ -50,15 +51,15 @@ describeIfJdtls("CLI integration (Java)", () => {
     expect(result.stdout).toContain("App")
   }, 240_000)
 
-  it("runs diagnostics", () => {
-    const { workspace, appFile } = createWorkspaceFiles()
+  it("runs diagnostics", async () => {
+    const { workspace, diagnosticsFailFile } = createWorkspaceFiles()
 
-    const warmup = runCli(["symbols", appFile, "--scope", "document", "--base-path", workspace, "--timeout", "120000"], 240_000)
+    const warmup = runCli(["symbols", diagnosticsFailFile, "--scope", "document", "--base-path", workspace, "--timeout", "120000"], 240_000)
     expectCliSuccess(warmup)
 
-    const result = runCli([
+    const result = await runCliAsync([
       "diagnostics",
-      appFile,
+      diagnosticsFailFile,
       "--base-path",
       workspace,
       "--timeout",
@@ -66,9 +67,8 @@ describeIfJdtls("CLI integration (Java)", () => {
     ], 240_000)
 
     expectCliSuccess(result)
-    const hasNoDiagnostics = result.stdout.includes("No diagnostics found")
-    const hasDiagnosticLine = / at \d+:\d+:/.test(result.stdout)
-    expect(hasNoDiagnostics || hasDiagnosticLine).toBe(true)
+    expect(result.stdout).not.toContain("No diagnostics found")
+    expect(result.stdout).toMatch(/ at \d+:\d+:/)
   }, 240_000)
 
   it("runs goto_definition", () => {

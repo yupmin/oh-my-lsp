@@ -22,7 +22,7 @@ export const LSP_INSTALL_HINTS: Record<string, string> = {
   clangd: "See https://clangd.llvm.org/installation",
   svelte: "npm install -g svelte-language-server",
   astro: "npm install -g @astrojs/language-server",
-  "bash-ls": "npm install -g bash-language-server",
+  "bash-ls": "npm install -g bash-language-server (also install shellcheck for diagnostics)",
   jdtls: "See https://github.com/eclipse-jdtls/eclipse.jdt.ls",
   "yaml-ls": "npm install -g yaml-language-server",
   "lua-ls": "See https://github.com/LuaLS/lua-language-server",
@@ -39,7 +39,7 @@ export const LSP_INSTALL_HINTS: Record<string, string> = {
   nixd: "nix profile install nixpkgs#nixd",
   tinymist: "See https://github.com/Myriad-Dreamin/tinymist",
   "haskell-language-server": "ghcup install hls",
-  bash: "npm install -g bash-language-server",
+  bash: "npm install -g bash-language-server (also install shellcheck for diagnostics)",
   "kotlin-ls": "See https://github.com/Kotlin/kotlin-lsp",
 }
 

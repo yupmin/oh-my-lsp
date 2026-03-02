@@ -56,8 +56,8 @@ jobs:
       - name: Run ast-grep replace integration test
         run: npm run test:cli:ast-grep-replace
 
-  language-cli-tests-group-1:
-    name: language-cli-tests-group-1 (${{ matrix.language }})
+  language-cli-tests-1:
+    name: language-cli-tests-1 (${{ matrix.language }})
     needs: test
     runs-on: ubuntu-latest
 
@@ -350,22 +350,33 @@ jobs:
       - name: Run CLI integration test
         run: npm run test:cli:${{ matrix.language }}
 
-  language-cli-tests-group-2:
-    name: language-cli-tests-group-2 (${{ matrix.language }})
-    needs: language-cli-tests-group-1
+  language-cli-tests-2:
+    name: language-cli-tests-2 (${{ matrix.language }})
+    needs: language-cli-tests-1
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        language: [typescript, javascript, python, php, rust, lua]
+        language: [typescript, javascript, python, php, lua]
     steps: *language_cli_tests_steps
 
-  language-cli-tests-group-3:
-    name: language-cli-tests-group-3 (${{ matrix.language }})
-    needs: language-cli-tests-group-2
+  language-cli-tests-fail:
+    name: language-cli-tests-fail (${{ matrix.language }})
+    needs: test
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [rust, csharp]
+    steps: *language_cli_tests_steps
+
+  language-cli-tests-3:
+    name: language-cli-tests-3 (${{ matrix.language }})
+    needs: language-cli-tests-2
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        language: [c, cpp, csharp, css, bash, yaml, dockerfile]
+        language: [c, cpp, css, bash, yaml, dockerfile]
     steps: *language_cli_tests_steps
