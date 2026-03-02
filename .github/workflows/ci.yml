@@ -357,7 +357,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [typescript, javascript, python, php, rust, lua]
+        language: [typescript, javascript, python, php, lua]
+    steps: *language_cli_tests_steps
+
+  language-cli-tests-group-fail:
+    name: language-cli-tests-group-fail (${{ matrix.language }})
+    needs: language-cli-tests-group-1
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [rust]
     steps: *language_cli_tests_steps
 
   language-cli-tests-group-3:
