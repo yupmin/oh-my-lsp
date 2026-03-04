@@ -32,14 +32,14 @@ function resolveRequestTimeoutMs(serverId: string): number {
 
 type JsonRpcRequest = {
   jsonrpc: "2.0"
-  id?: number
+  id?: number | string
   method: string
   params?: unknown
 }
 
 type JsonRpcResponse = {
   jsonrpc: "2.0"
-  id: number
+  id: number | string
   result?: unknown
   error?: { code: number; message: string }
 }
@@ -252,7 +252,7 @@ export class LSPClientTransport {
 
     if (!("method" in message)) return
 
-    if (typeof message.id === "number") {
+    if (typeof message.id === "number" || typeof message.id === "string") {
       void this.handleServerRequest(message.id, message.method, message.params)
       return
     }
@@ -260,7 +260,7 @@ export class LSPClientTransport {
     this.handleServerNotification(message.method, message.params)
   }
 
-  protected async handleServerRequest(id: number, method: string, params?: unknown): Promise<void> {
+  protected async handleServerRequest(id: number | string, method: string, params?: unknown): Promise<void> {
     try {
       let result: unknown = null
 
