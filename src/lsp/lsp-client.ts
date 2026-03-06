@@ -6,6 +6,8 @@ import { getLanguageId } from "./config"
 import { LSPClientConnection } from "./lsp-client-connection"
 import type { Diagnostic } from "./types"
 
+const SLOW_SERVERS = new Set(["jdtls", "kotlin-ls", "rust", "csharp"])
+
 export class LSPClient extends LSPClientConnection {
   private openedFiles = new Set<string>()
   private documentVersions = new Map<string, number>()
@@ -99,8 +101,7 @@ export class LSPClient extends LSPClientConnection {
     // Some servers (e.g. csharp-ls) load projects asynchronously after initialization.
     // Pull diagnostics may return empty until the project is ready, and push diagnostics
     // may be disabled when pull is supported. We poll both mechanisms until results arrive.
-    const slowServers = new Set(["jdtls", "kotlin-ls", "rust", "csharp"])
-    const maxWaitMs = slowServers.has(this.server.id) ? 30_000 : 3_000
+    const maxWaitMs = SLOW_SERVERS.has(this.server.id) ? 30_000 : 3_000
     const pollIntervalMs = 500
     const pullRetryIntervalMs = 3_000
     const reopenIntervalMs = 5_000
@@ -133,9 +134,7 @@ export class LSPClient extends LSPClientConnection {
 
       // Periodically re-open the file to re-trigger push diagnostics
       if (Date.now() - lastReopenAt >= reopenIntervalMs) {
-        this.sendNotification("textDocument/didClose", { textDocument: { uri } })
-        this.openedFiles.delete(absPath)
-        await this.openFile(absPath)
+        await this.reopenFile(absPath)
         lastReopenAt = Date.now()
       }
 
@@ -143,6 +142,13 @@ export class LSPClient extends LSPClientConnection {
     }
 
     return { items: this.diagnosticsStore.get(uri) ?? this.diagnosticsStore.get(realUri) ?? [] }
+  }
+
+  private async reopenFile(absPath: string): Promise<void> {
+    const uri = pathToFileURL(absPath).href
+    this.sendNotification("textDocument/didClose", { textDocument: { uri } })
+    this.openedFiles.delete(absPath)
+    await this.openFile(absPath)
   }
 
   async prepareRename(filePath: string, line: number, character: number): Promise<unknown> {
