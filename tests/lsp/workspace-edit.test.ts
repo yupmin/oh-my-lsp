@@ -1,24 +1,19 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { pathToFileURL } from "node:url"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { applyWorkspaceEdit } from "../../src/lsp/workspace-edit"
 import type { WorkspaceEdit } from "../../src/lsp/types"
+import { useTempDirTracker } from "../test-utils"
 
-const tempDirs: string[] = []
-
-afterEach(() => {
-  for (const dir of tempDirs.splice(0)) {
-    rmSync(dir, { recursive: true, force: true })
-  }
-})
+const { track } = useTempDirTracker()
 
 describe("applyWorkspaceEdit", () => {
   it("applies text edits to a file", () => {
     const dir = mkdtempSync(join(tmpdir(), "oh-my-lsp-edit-"))
-    tempDirs.push(dir)
+    track(dir)
 
     const filePath = join(dir, "sample.ts")
     writeFileSync(filePath, "const greet = 'hello'\n", "utf-8")

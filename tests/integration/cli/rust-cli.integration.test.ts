@@ -1,14 +1,16 @@
 import { spawnSync } from "node:child_process"
 import { readFileSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import {
-  cleanupWorkspace,
   createFixtureWorkspace,
+  expectCliSuccess,
+  expectCliSuccessOrKnownFailure,
   findNthOccurrencePosition,
   runCli,
   runCliAsync,
+  useWorkspaceTracker,
 } from "./cli-test-utils"
 
 function hasWorkingRustAnalyzer(): boolean {
@@ -17,17 +19,10 @@ function hasWorkingRustAnalyzer(): boolean {
 }
 
 const describeIfRustServer = hasWorkingRustAnalyzer() ? describe : describe.skip
-const workspaces: string[] = []
-
-afterEach(() => {
-  for (const workspace of workspaces.splice(0)) {
-    cleanupWorkspace(workspace)
-  }
-})
+const { track } = useWorkspaceTracker()
 
 function createWorkspaceFiles(): { workspace: string; sampleFile: string; diagnosticsFailFile: string } {
-  const workspace = createFixtureWorkspace("rust")
-  workspaces.push(workspace)
+  const workspace = track(createFixtureWorkspace("rust"))
   return {
     workspace,
     sampleFile: join(workspace, "src", "main.rs"),
@@ -48,24 +43,6 @@ function createDiagnosticsWorkspaceFiles(): { workspace: string; diagnosticsFail
   // Keep file inside crate entrypoint so rust-analyzer can report diagnostics reliably.
   writeFileSync(sampleFile, failingSource, "utf8")
   return { workspace, diagnosticsFailFile: sampleFile }
-}
-
-function expectCliSuccess(result: { error?: Error; status: number | null; stdout: string }): void {
-  expect(result.error).toBeUndefined()
-  expect(result.status).toBe(0)
-  expect(result.stdout).not.toContain("Error:")
-}
-
-function expectCliSuccessOrKnownFailure(result: { error?: Error; status: number | null; stdout: string }): void {
-  expect(result.error).toBeUndefined()
-  expect([0, 1]).toContain(result.status)
-
-  if (result.status === 1) {
-    expect(result.stdout).toContain("Error:")
-    return
-  }
-
-  expect(result.stdout).not.toContain("Error:")
 }
 
 describeIfRustServer("CLI integration (Rust)", () => {

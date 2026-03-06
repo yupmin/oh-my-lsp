@@ -1,8 +1,10 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { mkdtempSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
+import { useTempDirTracker } from "../test-utils"
 
 const { mockWithLspClient } = vi.hoisted(() => ({
   mockWithLspClient: vi.fn(),
@@ -15,13 +17,7 @@ vi.mock("../../src/lsp/lsp-client-wrapper", () => ({
 
 import { findReferences } from "../../src/commands/find-references-command"
 
-const tempDirs: string[] = []
-
-afterEach(() => {
-  for (const dir of tempDirs.splice(0)) {
-    rmSync(dir, { recursive: true, force: true })
-  }
-})
+const { track } = useTempDirTracker()
 
 describe("findReferences", () => {
   beforeEach(() => {
@@ -108,7 +104,7 @@ describe("findReferences", () => {
 
   it("retries with inferred symbol when default cursor has no references", async () => {
     const dir = mkdtempSync(join(tmpdir(), "oh-my-lsp-refs-"))
-    tempDirs.push(dir)
+    track(dir)
     const filePath = join(dir, "sample.php")
     writeFileSync(
       filePath,
@@ -149,7 +145,7 @@ describe("findReferences", () => {
 
   it("falls back to text-based references when LSP references remain empty", async () => {
     const dir = mkdtempSync(join(tmpdir(), "oh-my-lsp-refs-text-"))
-    tempDirs.push(dir)
+    track(dir)
     const filePath = join(dir, "sample.php")
     writeFileSync(
       filePath,

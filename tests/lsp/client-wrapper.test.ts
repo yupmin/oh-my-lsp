@@ -1,8 +1,8 @@
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs"
+import { mkdtempSync, writeFileSync, mkdirSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { pathToFileURL } from "node:url"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import {
   findWorkspaceRoot,
@@ -11,19 +11,14 @@ import {
   resolveLspRoot,
   uriToPath,
 } from "../../src/lsp/lsp-client-wrapper"
+import { useTempDirTracker } from "../test-utils"
 
-const tempDirs: string[] = []
-
-afterEach(() => {
-  for (const dir of tempDirs.splice(0)) {
-    rmSync(dir, { recursive: true, force: true })
-  }
-})
+const { track } = useTempDirTracker()
 
 describe("findWorkspaceRoot", () => {
   it("finds nearest ancestor containing a workspace marker", () => {
     const root = mkdtempSync(join(tmpdir(), "oh-my-lsp-root-"))
-    tempDirs.push(root)
+    track(root)
 
     writeFileSync(join(root, "package.json"), "{}", "utf-8")
     const nested = join(root, "src", "nested")
@@ -38,7 +33,7 @@ describe("findWorkspaceRoot", () => {
 describe("resolveLspRoot", () => {
   it("uses explicit base path when provided", () => {
     const root = mkdtempSync(join(tmpdir(), "oh-my-lsp-base-"))
-    tempDirs.push(root)
+    track(root)
 
     const filePath = join(root, "src", "index.ts")
     mkdirSync(join(root, "src"), { recursive: true })
@@ -49,7 +44,7 @@ describe("resolveLspRoot", () => {
 
   it("throws when base path does not exist", () => {
     const root = mkdtempSync(join(tmpdir(), "oh-my-lsp-base-missing-"))
-    tempDirs.push(root)
+    track(root)
     const filePath = join(root, "index.ts")
     writeFileSync(filePath, "export const x = 1\n", "utf-8")
 
@@ -58,7 +53,7 @@ describe("resolveLspRoot", () => {
 
   it("throws when base path is not a directory", () => {
     const root = mkdtempSync(join(tmpdir(), "oh-my-lsp-base-file-"))
-    tempDirs.push(root)
+    track(root)
     const filePath = join(root, "index.ts")
     const baseFilePath = join(root, "base.txt")
     writeFileSync(filePath, "export const x = 1\n", "utf-8")
@@ -71,7 +66,7 @@ describe("resolveLspRoot", () => {
 describe("uriToPath", () => {
   it("converts file uri to absolute path", () => {
     const root = mkdtempSync(join(tmpdir(), "oh-my-lsp-uri-"))
-    tempDirs.push(root)
+    track(root)
     const filePath = join(root, "a.ts")
     const uri = pathToFileURL(filePath).href
 

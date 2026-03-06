@@ -1,28 +1,22 @@
 import { readFileSync, rmSync, writeFileSync } from "node:fs"
 import { execSync } from "node:child_process"
 import { join } from "node:path"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import {
-  cleanupWorkspace,
   createFixtureWorkspace,
+  expectCliSuccess,
   findNthOccurrencePosition,
   hasCommand,
   runCli,
+  useWorkspaceTracker,
 } from "./cli-test-utils"
 
 const describeIfCsharpServer = hasCommand("csharp-ls") ? describe : describe.skip
-const workspaces: string[] = []
-
-afterEach(() => {
-  for (const workspace of workspaces.splice(0)) {
-    cleanupWorkspace(workspace)
-  }
-})
+const { track } = useWorkspaceTracker()
 
 function createWorkspaceFiles(): { workspace: string; sampleFile: string; diagnosticsFailFile: string } {
-  const workspace = createFixtureWorkspace("csharp")
-  workspaces.push(workspace)
+  const workspace = track(createFixtureWorkspace("csharp"))
   try {
     execSync("dotnet restore", { cwd: workspace, stdio: "ignore", timeout: 30_000 })
   } catch {
@@ -48,12 +42,6 @@ function createDiagnosticsWorkspaceFiles(): { workspace: string; diagnosticsFail
   // Keep file inside project entrypoint so csharp-ls can report diagnostics reliably.
   writeFileSync(sampleFile, failingSource, "utf8")
   return { workspace, diagnosticsFailFile: sampleFile }
-}
-
-function expectCliSuccess(result: { error?: Error; status: number | null; stdout: string }): void {
-  expect(result.error).toBeUndefined()
-  expect(result.status).toBe(0)
-  expect(result.stdout).not.toContain("Error:")
 }
 
 describeIfCsharpServer("CLI integration (C#)", () => {

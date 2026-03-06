@@ -1,22 +1,17 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { mkdtempSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { validateCwd } from "../../src/lsp/lsp-process"
+import { useTempDirTracker } from "../test-utils"
 
-const tempDirs: string[] = []
-
-afterEach(() => {
-  for (const dir of tempDirs.splice(0)) {
-    rmSync(dir, { recursive: true, force: true })
-  }
-})
+const { track } = useTempDirTracker()
 
 describe("validateCwd", () => {
   it("returns valid for an existing directory", () => {
     const dir = mkdtempSync(join(tmpdir(), "oh-my-lsp-cwd-"))
-    tempDirs.push(dir)
+    track(dir)
 
     expect(validateCwd(dir)).toEqual({ valid: true })
   })
@@ -29,7 +24,7 @@ describe("validateCwd", () => {
 
   it("returns invalid when path is a file", () => {
     const dir = mkdtempSync(join(tmpdir(), "oh-my-lsp-cwd-file-"))
-    tempDirs.push(dir)
+    track(dir)
 
     const filePath = join(dir, "a.txt")
     writeFileSync(filePath, "x", "utf-8")
