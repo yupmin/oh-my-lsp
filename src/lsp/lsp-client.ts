@@ -6,6 +6,8 @@ import { getLanguageId } from "./config"
 import { LSPClientConnection } from "./lsp-client-connection"
 import type { Diagnostic } from "./types"
 
+const SLOW_SERVERS = new Set(["jdtls", "kotlin-ls", "rust", "csharp"])
+
 export class LSPClient extends LSPClientConnection {
   private openedFiles = new Set<string>()
   private documentVersions = new Map<string, number>()
@@ -96,33 +98,57 @@ export class LSPClient extends LSPClientConnection {
     const realUri = pathToFileURL(realpathSync(absPath)).href
     await this.openFile(absPath)
 
-    // Try pull diagnostics first (textDocument/diagnostic)
-    try {
-      const result = await this.sendRequest<{ items?: Diagnostic[] }>("textDocument/diagnostic", {
-        textDocument: { uri },
-      })
-      if (result && typeof result === "object" && "items" in result) {
-        return result as { items: Diagnostic[] }
-      }
-    } catch {
-      // Server doesn't support pull diagnostics, fall through to polling push diagnostics
-    }
-
-    // Poll push diagnostics (textDocument/publishDiagnostics) from the store
-    const slowServers = new Set(["jdtls", "kotlin-ls", "rust"])
-    const maxWaitMs = slowServers.has(this.server.id) ? 30_000 : 3_000
+    // Some servers (e.g. csharp-ls) load projects asynchronously after initialization.
+    // Pull diagnostics may return empty until the project is ready, and push diagnostics
+    // may be disabled when pull is supported. We poll both mechanisms until results arrive.
+    const maxWaitMs = SLOW_SERVERS.has(this.server.id) ? 30_000 : 3_000
     const pollIntervalMs = 500
+    const pullRetryIntervalMs = 3_000
+    const reopenIntervalMs = 5_000
     const deadline = Date.now() + maxWaitMs
+    let lastReopenAt = Date.now()
+    let lastPullAt = 0
+    let pullSupported = true
 
     while (Date.now() < deadline) {
+      // Check push diagnostics store
       const stored = this.diagnosticsStore.get(uri) ?? this.diagnosticsStore.get(realUri)
       if (stored && stored.length > 0) {
         return { items: stored }
       }
+
+      // Periodically retry pull diagnostics (project may have loaded since last attempt)
+      if (pullSupported && Date.now() - lastPullAt >= pullRetryIntervalMs) {
+        try {
+          const result = await this.sendRequest<{ items?: Diagnostic[] }>("textDocument/diagnostic", {
+            textDocument: { uri },
+          })
+          lastPullAt = Date.now()
+          if (result && typeof result === "object" && "items" in result && Array.isArray(result.items) && result.items.length > 0) {
+            return result as { items: Diagnostic[] }
+          }
+        } catch {
+          pullSupported = false
+        }
+      }
+
+      // Periodically re-open the file to re-trigger push diagnostics
+      if (Date.now() - lastReopenAt >= reopenIntervalMs) {
+        await this.reopenFile(absPath)
+        lastReopenAt = Date.now()
+      }
+
       await new Promise((r) => setTimeout(r, pollIntervalMs))
     }
 
     return { items: this.diagnosticsStore.get(uri) ?? this.diagnosticsStore.get(realUri) ?? [] }
+  }
+
+  private async reopenFile(absPath: string): Promise<void> {
+    const uri = pathToFileURL(absPath).href
+    this.sendNotification("textDocument/didClose", { textDocument: { uri } })
+    this.openedFiles.delete(absPath)
+    await this.openFile(absPath)
   }
 
   async prepareRename(filePath: string, line: number, character: number): Promise<unknown> {
