@@ -58,6 +58,8 @@ export class LSPClientTransport {
     }
   >()
   protected nextRequestId = 1
+  protected readonly activeProgressTokens = new Set<string | number>()
+  private progressWaiters: Array<() => void> = []
 
   constructor(
     protected root: string,
@@ -270,6 +272,11 @@ export class LSPClientTransport {
           if (item.section === "json") return { validate: { enable: true } }
           return {}
         })
+      } else if (method === "window/workDoneProgress/create") {
+        const token = (params as { token?: string | number } | undefined)?.token
+        if (token !== undefined) {
+          this.activeProgressTokens.add(token)
+        }
       }
 
       this.sendRawMessage({ jsonrpc: "2.0", id, result })
@@ -288,7 +295,35 @@ export class LSPClientTransport {
       if (typed?.uri) {
         this.diagnosticsStore.set(typed.uri, typed.diagnostics ?? [])
       }
+    } else if (method === "$/progress") {
+      const typed = params as { token?: string | number; value?: { kind?: string } } | undefined
+      if (typed?.token !== undefined && typed?.value?.kind === "end") {
+        this.activeProgressTokens.delete(typed.token)
+        if (this.activeProgressTokens.size === 0) {
+          for (const waiter of this.progressWaiters) {
+            waiter()
+          }
+          this.progressWaiters = []
+        }
+      }
     }
+  }
+
+  waitForProgressComplete(timeoutMs: number): Promise<void> {
+    if (this.activeProgressTokens.size === 0) {
+      return Promise.resolve()
+    }
+    return new Promise<void>((resolve) => {
+      const timer = setTimeout(() => {
+        this.progressWaiters = this.progressWaiters.filter((w) => w !== done)
+        resolve()
+      }, timeoutMs)
+      const done = () => {
+        clearTimeout(timer)
+        resolve()
+      }
+      this.progressWaiters.push(done)
+    })
   }
 
   protected sendRawMessage(message: JsonRpcRequest | JsonRpcResponse): void {

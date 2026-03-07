@@ -15,7 +15,7 @@ class LSPServerManager {
   private clients = new Map<string, ManagedClient>()
   private cleanupInterval: ReturnType<typeof setInterval> | null = null
   private readonly IDLE_TIMEOUT = 5 * 60 * 1000
-  private readonly INIT_TIMEOUT = 60 * 1000
+  private readonly INIT_TIMEOUT = 180 * 1000
   private constructor() {
     this.startCleanupTimer()
     this.registerProcessCleanup()
