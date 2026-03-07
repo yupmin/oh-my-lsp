@@ -1,6 +1,6 @@
 {
   "name": "oh-my-lsp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "TypeScript CLI scaffold with commander.js",
   "bin": {
     "oh-my-lsp": "./dist/index.js"
@@ -31,7 +31,8 @@
     "test:cli:ast-grep-search": "npm run build && vitest run --config vitest.cli.config.ts tests/integration/cli/ast-grep-search-cli.integration.test.ts",
     "test:cli:ast-grep-replace": "npm run build && vitest run --config vitest.cli.config.ts tests/integration/cli/ast-grep-replace-cli.integration.test.ts",
     "test:cli:not-installed": "npm run build && vitest run --config vitest.cli.config.ts tests/integration/cli/not-installed-cli.integration.test.ts",
-    "test:cli": "npm run test:cli:typescript && npm run test:cli:java && npm run test:cli:javascript && npm run test:cli:python && npm run test:cli:php && npm run test:cli:go && npm run test:cli:c && npm run test:cli:cpp && npm run test:cli:csharp && npm run test:cli:css && npm run test:cli:bash && npm run test:cli:yaml && npm run test:cli:dockerfile && npm run test:cli:ruby && npm run test:cli:rust && npm run test:cli:kotlin && npm run test:cli:lua"
+    "test:cli": "npm run test:cli:typescript && npm run test:cli:java && npm run test:cli:javascript && npm run test:cli:python && npm run test:cli:php && npm run test:cli:go && npm run test:cli:c && npm run test:cli:cpp && npm run test:cli:csharp && npm run test:cli:css && npm run test:cli:bash && npm run test:cli:yaml && npm run test:cli:dockerfile && npm run test:cli:ruby && npm run test:cli:rust && npm run test:cli:kotlin && npm run test:cli:lua",
+    "version": "node scripts/sync-plugin-version.cjs && git add .claude-plugin/"
   },
   "keywords": [
     "cli",
