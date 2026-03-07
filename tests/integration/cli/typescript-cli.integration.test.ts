@@ -1,42 +1,30 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import {
-  cleanupWorkspace,
   createFixtureWorkspace,
+  expectCliSuccess,
   findNthOccurrencePosition,
   hasCommand,
   runCli,
+  useWorkspaceTracker,
 } from "./cli-test-utils"
 
 const describeIfTypescriptServer = hasCommand("typescript-language-server") ? describe : describe.skip
-const workspaces: string[] = []
-
-afterEach(() => {
-  for (const workspace of workspaces.splice(0)) {
-    cleanupWorkspace(workspace)
-  }
-})
+const { track } = useWorkspaceTracker()
 
 function createWorkspaceFiles(): {
   workspace: string
   sampleFile: string
   diagnosticsFailFile: string
 } {
-  const workspace = createFixtureWorkspace("typescript")
-  workspaces.push(workspace)
+  const workspace = track(createFixtureWorkspace("typescript"))
   return {
     workspace,
     sampleFile: join(workspace, "sample.ts"),
     diagnosticsFailFile: join(workspace, "diagnostics_fail.ts"),
   }
-}
-
-function expectCliSuccess(result: { error?: Error; status: number | null; stdout: string }): void {
-  expect(result.error).toBeUndefined()
-  expect(result.status).toBe(0)
-  expect(result.stdout).not.toContain("Error:")
 }
 
 describeIfTypescriptServer("CLI integration (TypeScript)", () => {

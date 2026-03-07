@@ -1,35 +1,23 @@
 import { join } from "node:path"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import {
-  cleanupWorkspace,
   createFixtureWorkspace,
+  expectCliSuccess,
   hasCommand,
   runCli,
+  useWorkspaceTracker,
 } from "./cli-test-utils"
 
 const describeIfSg = hasCommand("sg") ? describe : describe.skip
-const workspaces: string[] = []
-
-afterEach(() => {
-  for (const workspace of workspaces.splice(0)) {
-    cleanupWorkspace(workspace)
-  }
-})
+const { track } = useWorkspaceTracker()
 
 function createTypeScriptWorkspace(): { workspace: string; sampleFile: string } {
-  const workspace = createFixtureWorkspace("typescript")
-  workspaces.push(workspace)
+  const workspace = track(createFixtureWorkspace("typescript"))
   return {
     workspace,
     sampleFile: join(workspace, "sample.ts"),
   }
-}
-
-function expectCliSuccess(result: { error?: Error; status: number | null; stdout: string }): void {
-  expect(result.error).toBeUndefined()
-  expect(result.status).toBe(0)
-  expect(result.stdout).not.toContain("Error:")
 }
 
 describeIfSg("CLI integration (ast_grep_search, TypeScript)", () => {

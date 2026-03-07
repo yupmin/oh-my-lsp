@@ -1,27 +1,21 @@
 import { readFileSync, rmSync } from "node:fs"
 import { join } from "node:path"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import {
-  cleanupWorkspace,
   createFixtureWorkspace,
+  expectCliSuccess,
   findNthOccurrencePosition,
   hasCommand,
   runCli,
+  useWorkspaceTracker,
 } from "./cli-test-utils"
 
 const describeIfGoServer = hasCommand("gopls") ? describe : describe.skip
-const workspaces: string[] = []
-
-afterEach(() => {
-  for (const workspace of workspaces.splice(0)) {
-    cleanupWorkspace(workspace)
-  }
-})
+const { track } = useWorkspaceTracker()
 
 function createWorkspaceFiles(): { workspace: string; sampleFile: string; diagnosticsFailFile: string } {
-  const workspace = createFixtureWorkspace("go")
-  workspaces.push(workspace)
+  const workspace = track(createFixtureWorkspace("go"))
   return {
     workspace,
     sampleFile: join(workspace, "sample.go"),
@@ -41,12 +35,6 @@ function createDiagnosticsWorkspaceFiles(): { workspace: string; diagnosticsFail
   // Keep diagnostics scenarios isolated to avoid duplicate symbol interference.
   rmSync(sampleFile, { force: true })
   return { workspace, diagnosticsFailFile }
-}
-
-function expectCliSuccess(result: { error?: Error; status: number | null; stdout: string }): void {
-  expect(result.error).toBeUndefined()
-  expect(result.status).toBe(0)
-  expect(result.stdout).not.toContain("Error:")
 }
 
 describeIfGoServer("CLI integration (Go)", () => {

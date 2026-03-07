@@ -1,22 +1,17 @@
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { runCli } from "./cli-test-utils"
+import { useTempDirTracker } from "../../test-utils"
 
-const tempDirs: string[] = []
-
-afterEach(() => {
-  for (const dir of tempDirs.splice(0)) {
-    rmSync(dir, { recursive: true, force: true })
-  }
-})
+const { track } = useTempDirTracker()
 
 describe("CLI missing LSP server behavior", () => {
   it("shows install hint and keeps stderr empty when server is not installed", () => {
     const workspace = mkdtempSync(join(tmpdir(), "oh-my-lsp-not-installed-"))
-    tempDirs.push(workspace)
+    track(workspace)
 
     const opencodeConfigDir = join(workspace, "opencode-config")
     mkdirSync(opencodeConfigDir, { recursive: true })

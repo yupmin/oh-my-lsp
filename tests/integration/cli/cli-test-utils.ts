@@ -2,6 +2,7 @@ import { spawn, spawnSync, type SpawnSyncReturns } from "node:child_process"
 import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { afterEach, expect } from "vitest"
 
 export function hasCommand(command: string): boolean {
   const lookup = process.platform === "win32" ? "where" : "which"
@@ -140,4 +141,39 @@ export function findNthOccurrencePosition(
   }
 
   throw new Error(`Could not find occurrence ${occurrence} of "${needle}" in ${filePath}`)
+}
+
+export function expectCliSuccess(result: { error?: Error; status: number | null; stdout: string }): void {
+  expect(result.error).toBeUndefined()
+  expect(result.status).toBe(0)
+  expect(result.stdout).not.toContain("Error:")
+}
+
+export function expectCliSuccessOrKnownFailure(result: { error?: Error; status: number | null; stdout: string }): void {
+  expect(result.error).toBeUndefined()
+  expect([0, 1]).toContain(result.status)
+
+  if (result.status === 1) {
+    expect(result.stdout).toContain("Error:")
+    return
+  }
+
+  expect(result.stdout).not.toContain("Error:")
+}
+
+export function useWorkspaceTracker(): { track: (workspace: string) => string } {
+  const workspaces: string[] = []
+
+  afterEach(() => {
+    for (const workspace of workspaces.splice(0)) {
+      cleanupWorkspace(workspace)
+    }
+  })
+
+  function track(workspace: string): string {
+    workspaces.push(workspace)
+    return workspace
+  }
+
+  return { track }
 }

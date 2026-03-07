@@ -1,38 +1,26 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import {
-  cleanupWorkspace,
   createFixtureWorkspace,
+  expectCliSuccess,
   findNthOccurrencePosition,
   hasCommand,
   runCli,
+  useWorkspaceTracker,
 } from "./cli-test-utils"
 
 const describeIfCServer = hasCommand("clangd") ? describe : describe.skip
-const workspaces: string[] = []
-
-afterEach(() => {
-  for (const workspace of workspaces.splice(0)) {
-    cleanupWorkspace(workspace)
-  }
-})
+const { track } = useWorkspaceTracker()
 
 function createWorkspaceFiles(): { workspace: string; sampleFile: string; diagnosticsFailFile: string } {
-  const workspace = createFixtureWorkspace("c")
-  workspaces.push(workspace)
+  const workspace = track(createFixtureWorkspace("c"))
   return {
     workspace,
     sampleFile: join(workspace, "sample.c"),
     diagnosticsFailFile: join(workspace, "diagnostics_fail.c"),
   }
-}
-
-function expectCliSuccess(result: { error?: Error; status: number | null; stdout: string }): void {
-  expect(result.error).toBeUndefined()
-  expect(result.status).toBe(0)
-  expect(result.stdout).not.toContain("Error:")
 }
 
 describeIfCServer("CLI integration (C)", () => {

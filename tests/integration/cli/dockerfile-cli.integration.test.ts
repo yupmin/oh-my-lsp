@@ -1,36 +1,24 @@
 import { join } from "node:path"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import {
-  cleanupWorkspace,
   createFixtureWorkspace,
+  expectCliSuccess,
   hasCommand,
   runCli,
+  useWorkspaceTracker,
 } from "./cli-test-utils"
 
 const describeIfDockerfileServer = hasCommand("docker-langserver") ? describe : describe.skip
-const workspaces: string[] = []
-
-afterEach(() => {
-  for (const workspace of workspaces.splice(0)) {
-    cleanupWorkspace(workspace)
-  }
-})
+const { track } = useWorkspaceTracker()
 
 function createWorkspaceFiles(): { workspace: string; sampleFile: string; diagnosticsFailFile: string } {
-  const workspace = createFixtureWorkspace("dockerfile")
-  workspaces.push(workspace)
+  const workspace = track(createFixtureWorkspace("dockerfile"))
   return {
     workspace,
     sampleFile: join(workspace, "sample.dockerfile"),
     diagnosticsFailFile: join(workspace, "diagnostics_fail.dockerfile"),
   }
-}
-
-function expectCliSuccess(result: { error?: Error; status: number | null; stdout: string }): void {
-  expect(result.error).toBeUndefined()
-  expect(result.status).toBe(0)
-  expect(result.stdout).not.toContain("Error:")
 }
 
 describeIfDockerfileServer("CLI integration (Dockerfile)", () => {
