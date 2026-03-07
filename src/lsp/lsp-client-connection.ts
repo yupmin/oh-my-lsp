@@ -1,6 +1,17 @@
 import { pathToFileURL } from "node:url"
 
 import { LSPClientTransport } from "./lsp-client-transport"
+import { log } from "../shared/logger"
+
+const SLOW_SERVERS = new Set(["jdtls", "kotlin-ls", "rust", "csharp"])
+const PROGRESS_WAIT_TIMEOUT_MS = 120_000
+
+function resolveProgressWaitTimeoutMs(): number {
+  const raw = process.env.OH_MY_LSP_PROGRESS_WAIT_MS?.trim()
+  if (!raw) return PROGRESS_WAIT_TIMEOUT_MS
+  const parsed = Number(raw)
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : PROGRESS_WAIT_TIMEOUT_MS
+}
 
 export class LSPClientConnection extends LSPClientTransport {
   async initialize(): Promise<void> {
@@ -61,6 +72,19 @@ export class LSPClientConnection extends LSPClientTransport {
     this.sendNotification("workspace/didChangeConfiguration", {
       settings: { json: { validate: { enable: true } } },
     })
-    await new Promise((r) => setTimeout(r, 300))
+
+    if (SLOW_SERVERS.has(this.server.id)) {
+      // Slow servers (jdtls, kotlin-ls, etc.) index the project asynchronously
+      // after initialization. Wait for initial progress tokens to arrive,
+      // then wait for all of them to complete before accepting requests.
+      const waitMs = resolveProgressWaitTimeoutMs()
+      log(`[LSP] Waiting for ${this.server.id} to become ready (up to ${waitMs}ms)`)
+      // Give the server a moment to register its initial progress tokens
+      await new Promise((r) => setTimeout(r, 2000))
+      await this.waitForProgressComplete(waitMs)
+      log(`[LSP] ${this.server.id} is ready`)
+    } else {
+      await new Promise((r) => setTimeout(r, 300))
+    }
   }
 }
