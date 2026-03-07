@@ -4,9 +4,10 @@ import { pathToFileURL } from "node:url"
 
 import { getLanguageId } from "./config"
 import { LSPClientConnection } from "./lsp-client-connection"
+import { normalizeFileUri } from "./uri-utils"
 import type { Diagnostic } from "./types"
 
-const SLOW_SERVERS = new Set(["jdtls", "kotlin-ls", "rust", "csharp"])
+const SLOW_SERVERS = new Set(["jdtls", "kotlin-ls", "rust", "csharp", "typescript"])
 
 export class LSPClient extends LSPClientConnection {
   private openedFiles = new Set<string>()
@@ -94,8 +95,8 @@ export class LSPClient extends LSPClientConnection {
 
   async diagnostics(filePath: string): Promise<{ items: Diagnostic[] }> {
     const absPath = resolve(filePath)
-    const uri = pathToFileURL(absPath).href
-    const realUri = pathToFileURL(realpathSync(absPath)).href
+    const uri = normalizeFileUri(pathToFileURL(absPath).href)
+    const realUri = normalizeFileUri(pathToFileURL(realpathSync(absPath)).href)
     await this.openFile(absPath)
 
     // Some servers (e.g. csharp-ls) load projects asynchronously after initialization.
