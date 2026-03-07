@@ -6,12 +6,12 @@
   },
   "metadata": {
     "description": "Claude Code plugin for code navigation, refactoring, and AST-aware search/replace via oh-my-lsp CLI",
-    "version": "0.1.4"
+    "version": "0.1.5"
   },
   "plugins": [
     {
       "name": "oh-my-lsp",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "description": "Use oh-my-lsp CLI to navigate code and refactor safely via LSP and AST-grep. Use when a user asks to go to definition, find references, find all usages of a function/method/variable, list symbols in a file, check type errors or diagnostics, rename a symbol across the codebase, search for structural code patterns, or bulk-replace code patterns with AST-aware rewrites.",
       "author": {
         "name": "yupmin"
