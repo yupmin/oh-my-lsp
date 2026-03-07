@@ -1,6 +1,6 @@
 ---
 name: oh-my-lsp
-description: Run and interpret the oh-my-lsp CLI for code navigation, refactoring, and AST-aware search/replace. Use when a user asks to find definitions/references/symbols, inspect diagnostics, rename symbols, or run ast-grep pattern search/replace.
+description: Use oh-my-lsp CLI to navigate code and refactor safely via LSP and AST-grep. MUST use this skill whenever the user asks to go to definition, find references, find all usages of a function/method/variable, list symbols in a file, check type errors or diagnostics before building, rename a symbol across the codebase, search for structural code patterns (e.g. console.log, var declarations, deprecated API calls), or bulk-replace code patterns with AST-aware rewrites. Applies to any language (TypeScript, Python, Go, Java, Rust, C, etc.). Also use when the user mentions oh-my-lsp, ast-grep, or LSP commands directly. If the task involves "where is this defined", "where is this used", "rename this everywhere", "find this pattern", "replace this pattern", or "check for errors" — this skill applies.
 ---
 
 # oh-my-lsp

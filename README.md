@@ -85,9 +85,29 @@ Basic format:
 oh-my-lsp <command> <args...>
 ```
 
-### For AI Agents
+### Claude Code Plugin
 
-If you are using `oh-my-lsp` with an AI coding agent (e.g. Claude Code, Cursor, Windsurf), add the following to your project's `CLAUDE.md` or `AGENTS.md` to enforce correct tool usage:
+Install `oh-my-lsp` as a Claude Code plugin so the AI agent automatically uses LSP and AST-grep commands for code navigation and refactoring.
+
+#### 1. Add the marketplace
+
+```bash
+claude plugin marketplace add https://github.com/yupmin/oh-my-lsp.git
+```
+
+#### 2. Install the plugin
+
+```bash
+claude plugin install oh-my-lsp
+```
+
+#### 3. Restart Claude Code
+
+The `oh-my-lsp` skill will appear in the available skills list. Claude will automatically use it when you ask to find definitions, references, rename symbols, check diagnostics, or search/replace code patterns.
+
+### For Other AI Agents
+
+If you are using `oh-my-lsp` with other AI coding agents (e.g. Cursor, Windsurf), add the following to your project's `CLAUDE.md` or `AGENTS.md`:
 
 ```markdown
 ## When Does `oh-my-lsp` Skill Apply?
