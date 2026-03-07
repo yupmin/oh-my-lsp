@@ -5,6 +5,7 @@ import { join } from "node:path"
 import type { Diagnostic, ResolvedServer } from "./types"
 import { spawnProcess, type UnifiedProcess } from "./lsp-process"
 import { log } from "../shared/logger"
+import { normalizeFileUri } from "./uri-utils"
 import { detectLombokJar } from "./lombok-detector"
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 15000
@@ -286,7 +287,7 @@ export class LSPClientTransport {
     if (method === "textDocument/publishDiagnostics") {
       const typed = params as { uri?: string; diagnostics?: Diagnostic[] } | undefined
       if (typed?.uri) {
-        this.diagnosticsStore.set(typed.uri, typed.diagnostics ?? [])
+        this.diagnosticsStore.set(normalizeFileUri(typed.uri), typed.diagnostics ?? [])
       }
     }
   }

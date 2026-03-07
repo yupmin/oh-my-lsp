@@ -7,6 +7,7 @@ import {
   expectCliSuccess,
   findNthOccurrencePosition,
   hasCommand,
+  normalizeDriveLetter,
   runCli,
   useWorkspaceTracker,
 } from "./cli-test-utils"
@@ -68,7 +69,7 @@ describeIfTypescriptServer("CLI integration (TypeScript)", () => {
     ])
 
     expectCliSuccess(result)
-    expect(result.stdout).toContain(sampleFile)
+    expect(normalizeDriveLetter(result.stdout)).toContain(normalizeDriveLetter(sampleFile))
     expect(result.stdout).toMatch(/:1:\d+/)
   }, 120_000)
 
@@ -88,9 +89,10 @@ describeIfTypescriptServer("CLI integration (TypeScript)", () => {
     ])
 
     expectCliSuccess(result)
+    const normalizedSampleFile = normalizeDriveLetter(sampleFile)
     const referenceLines = result.stdout
       .split("\n")
-      .filter((line) => line.trim().startsWith(sampleFile))
+      .filter((line) => normalizeDriveLetter(line.trim()).startsWith(normalizedSampleFile))
     expect(referenceLines.length).toBeGreaterThanOrEqual(2)
   }, 120_000)
 

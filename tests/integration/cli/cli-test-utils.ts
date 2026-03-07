@@ -87,6 +87,14 @@ export function runCliAsync(args: string[], timeoutMs = 180_000): Promise<CliAsy
   })
 }
 
+/**
+ * Normalize Windows drive letter to lowercase for consistent path comparison.
+ * No-op on non-Windows platforms.
+ */
+export function normalizeDriveLetter(p: string): string {
+  return p.replace(/^([A-Z]):/, (_, drive: string) => `${drive.toLowerCase()}:`)
+}
+
 export function createFixtureWorkspace(
   language:
     | "typescript"
