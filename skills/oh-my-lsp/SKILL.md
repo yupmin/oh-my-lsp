@@ -135,14 +135,15 @@ AST-aware code pattern search across files.
 - `lang` must be one of:
   - `bash`, `c`, `cpp`, `csharp`, `css`, `elixir`, `go`, `haskell`, `html`, `java`, `javascript`, `json`, `kotlin`, `lua`, `nix`, `php`, `python`, `ruby`, `rust`, `scala`, `solidity`, `swift`, `typescript`, `tsx`, `yaml`
 - Pattern should be a complete AST node and can use meta variables (`$VAR`, `$$$`).
+- By default, searches the entire working directory. Use `--paths` only to narrow scope to specific directories.
 - Examples:
   ```shell
-  # Find all function declarations
-  npx oh-my-lsp ast_grep_search typescript "function $NAME($$$ARGS)" --paths src
+  # Find all function declarations (searches entire project)
+  npx oh-my-lsp ast_grep_search typescript "function $NAME($$$ARGS)"
   # Find console.log calls
   npx oh-my-lsp ast_grep_search typescript "console.log($MSG)"
-  # Find null checks
-  npx oh-my-lsp ast_grep_search typescript "$X === null"
+  # Find null checks in a specific directory
+  npx oh-my-lsp ast_grep_search typescript "$X === null" --paths lib
   ```
 
 ### `ast_grep_replace`
